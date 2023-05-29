@@ -1,0 +1,14 @@
+pragma ever-solidity >= 0.61.2;
+
+library ErrorCodes {
+    uint16 constant NOT_REGULAR_MANAGER = 1104;
+    uint16 constant NOT_CURRENCY = 1105;
+    uint16 constant WALLET_ALREADY_CREATED = 1106;
+    uint16 constant NOT_BANK = 1107;
+    uint16 constant ZERO_DAILY_LIMIT = 1108;
+    uint16 constant ZERO_MONTHLY_LIMIT = 1109;
+    uint16 constant BANK_WALLET_NOT_EXIST = 1110;
+    uint16 constant ZERO_AMOUNT = 1111;
+    uint16 constant NOT_TOKEN_ROOT = 1112;
+
+}
