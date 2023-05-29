@@ -14,7 +14,7 @@ contract Bank is
     IBank {
 
     uint8 constant MAX_CBDC_COUNT = 10;
-    mapping(address => bool) public supportedCbdc;
+    mapping(address => CbdcInfo) public supportedCbdc;
     mapping(address => address) public walletAddresses; // currency => wallet
 
     constructor(address owner) public {
@@ -30,8 +30,13 @@ contract Bank is
         return{value: 0, bounce: false, flag: 64} walletAddresses.at(currency);
     }
 
+    function getDefaultSpending(address currency) override external responsible view returns (address, uint128, uint128) {
+        CbdcInfo cbdcInfo = supportedCbdc.at(currency);
+        return{value: 0, bounce: false, flag: 64} (currency, cbdcInfo.defaultDailyLimit , cbdcInfo.defaultMonthlyLimit);
+    }
+
     function updateSupportedCbdc(
-        SuportCbdcParams[] cbdcDetails
+        mapping(address => CbdcInfo) cbdcDetails
     )
         public
         override
@@ -39,15 +44,16 @@ contract Bank is
     {
         tvm.accept();
 
-        for (SuportCbdcParams cbdcDetail : cbdcDetails) {
-            if (supportedCbdc.exists(cbdcDetail.cbdc)) {
-                supportedCbdc.replace(cbdcDetail.cbdc, cbdcDetail.isActive);
+        for ((address cbdcAddress, CbdcInfo cbdcInfo) : cbdcDetails) {
+            if (supportedCbdc.exists(cbdcAddress)) {
+                supportedCbdc.replace(cbdcAddress, cbdcInfo);
                 // TODO: consider mechanics to remove support of CBDC. How to ensure,
                 // it still will be withdrawable or accessable?
             } else {
-                supportedCbdc.add(cbdcDetail.cbdc, cbdcDetail.isActive);
+                supportedCbdc.add(cbdcAddress, cbdcInfo);
             }
         }
 
     }
+
 }
