@@ -14,5 +14,8 @@ library ErrorCodes {
     uint16 constant NON_ZERO_MONTHLY_LIMIT = 1114;
     uint16 constant DAILY_LIMIT_REACHED = 1115;
     uint16 constant MONTHLY_LIMIT_REACHED = 1116;
-
+    uint16 constant CACHE_TIMESTAMP_TOO_OLD = 1117;
+    uint16 constant GOAL_NOT_REACHED = 1118;
+    uint16 constant CARD_NOT_ACTIVE = 1119;
+    uint16 constant NOT_WALLET = 1120;
 }

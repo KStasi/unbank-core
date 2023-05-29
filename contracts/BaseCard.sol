@@ -10,17 +10,18 @@ import "tip3/contracts/interfaces/ITokenWallet.sol";
 import "./ErrorCodes.sol";
 import "./interfaces/IBank.sol";
 
-enum CardType {
-    DEBIT,
-    CREDIT,
-    SAVINGS
-}
 // TODO: add events
 // TODO: does it make sense to make BaseCard TIP3 compatible?
 
-contract BaseCard is
+abstract contract BaseCard is
     InternalOwner,
     RandomNonce {
+
+    enum CardType {
+        DEBIT,
+        CREDIT,
+        SAVINGS
+    }
 
     address public bank;
     address public bankWallet;
@@ -34,26 +35,14 @@ contract BaseCard is
 
     bool public isActive = true;
 
-    uint128 public dailyLimit = 0;
-    uint128 public monthlyLimit = 0;
-
-    uint256 public dailySpent;
-    uint256 public monthlySpent;
-
-    // Limit resets every 24 hours
-    uint256 public nextDay;
-
-    // Limit resets every 30 days
-    uint256 public nextMonth;
-
-
-    CardType public cardType = CardType.DEBIT;
+    CardType public cardType;
     uint128 constant DEPLOY_WALLET_VALUE = 1000000;
 
     modifier onlyAllowedTokenRoot(address _tokenRoot) {
         require(_tokenRoot == currency, ErrorCodes.NOT_TOKEN_ROOT);
         _;
     }
+
     modifier onlyCurrency() {
         require(msg.sender == currency && msg.sender.value != 0, ErrorCodes.NOT_CURRENCY);
         _;
@@ -61,6 +50,10 @@ contract BaseCard is
 
     modifier onlyBank() {
         require(msg.sender == bank && msg.sender.value != 0, ErrorCodes.NOT_BANK);
+        _;
+    }
+    modifier onlyWallet() {
+        require(msg.sender == wallet && msg.sender.value != 0, ErrorCodes.NOT_WALLET);
         _;
     }
 
@@ -71,9 +64,6 @@ contract BaseCard is
         currency = _currency;
         bank =  _bank;
 
-        // TODO: request default spending limit from bank
-        IBank(bank).getDefaultSpending{callback : BaseCard.setDefaultSpendingLimitsOnInit}(currency);
-
         ITokenRoot(_currency).deployWallet{callback: BaseCard.onWalletCreated}(address(this), DEPLOY_WALLET_VALUE);
     }
 
@@ -82,34 +72,8 @@ contract BaseCard is
         onlyOwner
     {
         tvm.accept();
-        IBank(bank).getWalletAddress{callback : BaseCard.onBankWalletAddressUpdated}(currency);
-    }
-
-    function setDefaultSpendingLimitsOnInit(
-        address _currency,
-        uint128 _dailyLimit,
-        uint128 _monthlyLimit
-    )
-        public
-        onlyBank
-    {
-        tvm.accept();
-        require(_currency == currency, ErrorCodes.NOT_CURRENCY);
-        require(dailyLimit == 0, ErrorCodes.NON_ZERO_DAILY_LIMIT);
-        require(monthlyLimit == 0, ErrorCodes.NON_ZERO_MONTHLY_LIMIT);
-
-        _updateSpendingLimit(_dailyLimit, _monthlyLimit);
-    }
-
-    function updateSpendingLimit(
-        uint128 _dailyLimit,
-        uint128 _monthlyLimit
-    )
-        public
-        onlyBank
-    {
-        tvm.accept();
-        _updateSpendingLimit(_dailyLimit, _monthlyLimit);
+        // TODO: move to card type implementation
+        // IBank(bank).getWalletAddress{callback : BaseCard.onBankWalletAddressUpdated}(currency);
     }
 
 
@@ -216,7 +180,7 @@ contract BaseCard is
         onlyOwner
     {
         tvm.accept();
-        _validateLimits(_amount);
+        _validateTransfer(_amount, _payload);
 
         ITokenWallet(wallet).transferToWallet(
             _amount,
@@ -239,7 +203,7 @@ contract BaseCard is
         onlyOwner
     {
         tvm.accept();
-        _validateLimits(_amount);
+        _validateTransfer(_amount, _payload);
 
         ITokenWallet(wallet).transfer(
             _amount,
@@ -252,38 +216,11 @@ contract BaseCard is
 
     // INTERNAL
 
-    function _validateLimits(
-        uint128 _amount
-    )
-        internal
-    {
-        while(block.timestamp >= nextDay) {
-            nextDay += 1 days;
-            dailySpent = 0;
-        }
-
-        while(block.timestamp >= nextMonth) {
-            nextMonth += 30 days;
-            monthlySpent = 0;
-        }
-
-        require(dailySpent + _amount <= dailyLimit, ErrorCodes.DAILY_LIMIT_REACHED);
-        require(monthlySpent + _amount <= monthlyLimit, ErrorCodes.MONTHLY_LIMIT_REACHED);
-
-        dailySpent += _amount;
-        monthlySpent += _amount;
-    }
-
-    function _updateSpendingLimit(
-        uint128 _dailyLimit,
-        uint128 _monthlyLimit
-    )
-        internal
-    {
-        require(_dailyLimit > 0, ErrorCodes.ZERO_DAILY_LIMIT);
-        require(_monthlyLimit > 0, ErrorCodes.ZERO_MONTHLY_LIMIT);
-
-        dailyLimit = _dailyLimit;
-        monthlyLimit = _monthlyLimit;
+    function _validateTransfer(
+        uint128 _amount,
+        TvmCell _payload)
+        internal virtual {
+        require(_amount > 0, ErrorCodes.ZERO_AMOUNT);
+        require(isActive, ErrorCodes.CARD_NOT_ACTIVE);
     }
 }
