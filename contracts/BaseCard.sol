@@ -218,10 +218,33 @@ contract BaseCard is
         tvm.accept();
         _validateLimits(_amount);
 
-        // TODO: check limits
         ITokenWallet(wallet).transferToWallet(
             _amount,
             _recipientTokenWallet,
+            _remainingGasTo,
+            _notify,
+            _payload);
+    }
+
+      function transfer(
+        uint128 _amount,
+        address _recipient,
+        uint128 _deployWalletValue,
+        address _remainingGasTo,
+        bool _notify,
+        TvmCell _payload
+    )
+
+        public
+        onlyOwner
+    {
+        tvm.accept();
+        _validateLimits(_amount);
+
+        ITokenWallet(wallet).transfer(
+            _amount,
+            _recipient,
+            _deployWalletValue,
             _remainingGasTo,
             _notify,
             _payload);
