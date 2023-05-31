@@ -20,4 +20,8 @@ library ErrorCodes {
     uint16 constant NOT_WALLET = 1120;
     uint16 constant NOT_ACTIVE_ACCOUNT = 1121;
     uint16 constant NOT_CARD_OF_ACCOUNT = 1122;
+    uint16 constant NFT_NON_TRANSFERABLE = 1123;
+    uint16 constant NOT_MANAGER_COLLECTION = 1124;
+    uint16 constant NOT_OWNER = 1125;
+    uint16 constant NOT_ENOUGH_RESERVE = 1126;
 }

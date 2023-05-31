@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@broxus/contracts": "^1.1.1",
+    "@itgold/everscale-tip": "^1.1.4",
     "locklift-deploy": "^1.0.3"
   }
 }

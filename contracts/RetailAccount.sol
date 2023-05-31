@@ -21,11 +21,6 @@ contract RetailAccount is
     address public cardsRegistry;
     address public bank;
 
-    // modifier onlyRegularManager() {
-    //     require(msg.pubkey() == owner, ErrorCodes.NOT_REGULAR_MANAGER);
-    //     _;
-    // }
-
     modifier onlyActive() {
         require(isActive, ErrorCodes.NOT_ACTIVE_ACCOUNT);
         _;
@@ -84,6 +79,7 @@ contract RetailAccount is
     }
 
     // TODO: should we allow access to cards only via accounts or directly?
+    // -------------------------------------------------------------------
     // function setCardActivation(
     //     address _card,
     //     bool _isActive
@@ -145,6 +141,7 @@ contract RetailAccount is
         onlyOwner
     {
         tvm.accept();
+        require(isActive, ErrorCodes.NOT_ACTIVE_ACCOUNT);
         dest.transfer(value, bounce, flags, payload);
     }
 
@@ -164,6 +161,7 @@ contract RetailAccount is
         onlyOwner
     {
         tvm.accept();
+        require(isActive, ErrorCodes.NOT_ACTIVE_ACCOUNT);
         for (uint i = 0; i < transactions.length; i++) {
             Transaction transaction = transactions[i];
             transaction.dest.transfer(transaction.value, transaction.bounce, transaction.flags, transaction.payload);
