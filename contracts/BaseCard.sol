@@ -13,7 +13,7 @@ import "./interfaces/IBank.sol";
 // TODO: add events
 // TODO: does it make sense to make BaseCard TIP3 compatible?
 
-abstract contract BaseCard is
+contract BaseCard is
     InternalOwner,
     RandomNonce {
 
@@ -57,10 +57,11 @@ abstract contract BaseCard is
         _;
     }
 
-    constructor(address _currency, address _bank) public {
-        tvm.accept();
+    constructor(TvmCell _cardDetails) public {
+        TvmSlice cardDetails = _cardDetails.toSlice();
+        (address _currency, address _owner, address _bank) = cardDetails.decode(address, address, address);
 
-        setOwnership(msg.sender);
+        setOwnership(_owner);
         currency = _currency;
         bank =  _bank;
 
@@ -76,6 +77,9 @@ abstract contract BaseCard is
         // IBank(bank).getWalletAddress{callback : BaseCard.onBankWalletAddressUpdated}(currency);
     }
 
+    function getCode () public responsible returns (TvmCell) {
+        return{value: 0, bounce: false, flag: 64} tvm.code();
+    }
 
     // dev: must be approved by bank's managers
     function transferToBank(
@@ -98,9 +102,10 @@ abstract contract BaseCard is
             _payload);
 
         delegatedBalance += _amount;
+        frozenBalance += _amount;
     }
 
-    function setAccountActivation(
+    function setCardActivation(
         bool _isActive
     )
         public
@@ -152,6 +157,7 @@ abstract contract BaseCard is
         if (_senderWallet == bankWallet) {
             // TODO: parse payload to ensure it's a transfer to return funds from the bank
             delegatedBalance -= _amount;
+            frozenBalance -= _amount;
         }
         // TODO: do something on transfer to the wallet
     }
@@ -168,7 +174,7 @@ abstract contract BaseCard is
         wallet = _wallet;
     }
 
-      function transferToWallet(
+    function transferToWallet(
         uint128 _amount,
         address _recipientTokenWallet,
         address _remainingGasTo,
@@ -190,7 +196,7 @@ abstract contract BaseCard is
             _payload);
     }
 
-      function transfer(
+    function transfer(
         uint128 _amount,
         address _recipient,
         uint128 _deployWalletValue,

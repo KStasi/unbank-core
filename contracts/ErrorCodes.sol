@@ -18,4 +18,6 @@ library ErrorCodes {
     uint16 constant GOAL_NOT_REACHED = 1118;
     uint16 constant CARD_NOT_ACTIVE = 1119;
     uint16 constant NOT_WALLET = 1120;
+    uint16 constant NOT_ACTIVE_ACCOUNT = 1121;
+    uint16 constant NOT_CARD_OF_ACCOUNT = 1122;
 }

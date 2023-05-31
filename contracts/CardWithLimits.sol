@@ -24,8 +24,12 @@ contract CardWithLimits is BaseCard {
     // Limit resets every 30 days
     uint256 public nextMonth;
 
-    constructor(address _currency, address _bank) BaseCard(_currency, _bank) public {
+    constructor(TvmCell _cardDetails) BaseCard(_cardDetails) public {
         cardType = CardType.DEBIT;
+
+        TvmSlice cardDetails = _cardDetails.toSlice();
+        (address _currency) = cardDetails.decode(address);
+
         IBank(bank).getDefaultSpending{callback : CardWithLimits.setDefaultSpendingLimitsOnInit}(currency);
     }
 
