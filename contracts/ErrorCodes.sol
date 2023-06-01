@@ -24,4 +24,7 @@ library ErrorCodes {
     uint16 constant NOT_MANAGER_COLLECTION = 1124;
     uint16 constant NOT_OWNER = 1125;
     uint16 constant NOT_ENOUGH_RESERVE = 1126;
+    uint16 constant INVALID_QUORUM_RATE = 1127;
+    uint16 constant LOW_PROPOSER_BALANCE = 1128;
+    uint16 constant SENDER_IS_NOT_VALID_WALLET = 1129;
 }
