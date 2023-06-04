@@ -5,6 +5,11 @@ pragma AbiHeader pubkey;
 
 import "@broxus/contracts/contracts/access/InternalOwner.tsol";
 import "@broxus/contracts/contracts/utils/RandomNonce.tsol";
+import "tip3/contracts/interfaces/IBurnableByRootTokenWallet.sol";
+import "tip3/contracts/interfaces/IAcceptTokensTransferCallback.sol";
+import "tip3/contracts/interfaces/IAcceptTokensBurnCallback.sol";
+import "tip3/contracts/interfaces/ITokenRoot.sol";
+import "tip3/contracts/interfaces/ITokenWallet.sol";
 import "tip3/contracts/TokenRoot.sol";
 import "tip3/contracts/TokenWallet.sol";
 import "./ErrorCodes.sol";
@@ -12,7 +17,7 @@ import "./interfaces/IBank.sol";
 
 // TODO: think what things should be comminted before continue?
 // TODO: comprehend permisions system
-contract ShareTokenRoot is TokenRoot {
+contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptTokensBurnCallback {
     struct Transaction {
         // Transaction Id.
         uint64 id;
@@ -34,6 +39,13 @@ contract ShareTokenRoot is TokenRoot {
         optional(TvmCell) stateInit;
     }
 
+    struct Deposit{
+        uint128 amount;
+        uint32  lockedUntil;
+        address assetRoot;
+        address owner;
+    }
+
     uint8   constant MAX_QUEUED_REQUESTS = 5;
     uint32  constant DEFAULT_LIFETIME = 3600; // lifetime is 1 hour
     uint32  constant MIN_LIFETIME = 10; // 10 secs
@@ -49,15 +61,19 @@ contract ShareTokenRoot is TokenRoot {
     uint8 constant FLAG_SEND_ALL_REMAINING = 128;
     uint32 constant QUORUM_BASE = 10000;
 
-    // Binary mask with custodian requests (max 32 custodians).
-    uint256 _requestsMask;
     // Dictionary of queued transactions waiting for confirmations.
     mapping(uint64 => Transaction) _transactions;
+    mapping(uint64 => Deposit) _lockedDeposits;
+    mapping(address => address) public _walletAddresses; // currency => wallet
+
+    // TODO: add methods to update params
     // Minimal number of confirmations needed to execute transaction.
     uint32 _defaultQuorumRate;
     // Unconfirmed transaction lifetime, in seconds.
     uint32 _lifetime;
     uint128 _minProposerBalance;
+    uint32 _depositLock = 30 * 24 * 3600;
+    uint128 _deployWalletValue = 1000000;
 
     function _initialize(
         uint128 minProposerBalance,
@@ -91,9 +107,29 @@ contract ShareTokenRoot is TokenRoot {
             msg.sender
         )
     {
+        tvm.accept();
         rootOwner_ = address(this);
     }
 
+    function addCurrency(address currencyRoot) public onlyRootOwner {
+        require(!_walletAddresses.exists(currencyRoot), ErrorCodes.WALLET_ALREADY_CREATED);
+        tvm.accept();
+        ITokenRoot root = ITokenRoot(currencyRoot);
+        root.deployWallet{callback: onWalletCreated}(
+            address(this),
+            _deployWalletValue
+        );
+    }
+
+    function onWalletCreated(
+        address _wallet
+    )
+        public
+    {
+        require(!_walletAddresses.exists(msg.sender), ErrorCodes.WALLET_ALREADY_CREATED);
+        tvm.accept();
+        _walletAddresses[msg.sender] = _wallet;
+    }
     function submitTransaction(
         address sender,
         uint128 senderBalance,
@@ -124,21 +160,57 @@ contract ShareTokenRoot is TokenRoot {
             bounce: bounce,
             stateInit: stateInit
         });
-
+        _transactions[trId] = txn;
         // dev: we can't confirm it here since we weren't sure about trId when call this method from wallet
         // _confirmTransaction(txn, senderBalance);
         return trId;
     }
 
-    function confirmTransaction(uint64 trId) public {
-        Transaction txn = _transactions[trId];
-        require(txn.id == trId, ErrorCodes.INVALID_TRANSACTION_ID);
-        require(txn.votesReceived < txn.votesRequired, ErrorCodes.TRANSACTION_ALREADY_CONFIRMED);
-        require(_requestsMask & (1 << uint256(msg.sender)) != 0, ErrorCodes.SENDER_IS_NOT_CUSTODIAN);
-        require(txn.votesReceived < MAX_CUSTODIAN_COUNT, ErrorCodes.TOO_MANY_CONFIRMATIONS);
-
+    function mintForDeposit(
+        uint64 depositId,
+        uint128 amount,
+        uint128 deployWalletValue,
+        address remainingGasTo,
+        bool notify,
+        TvmCell payload
+    ) public onlyRootOwner {
+        require(_lockedDeposits.exists(depositId), ErrorCodes.DEPOSIT_DOES_NOT_EXIST);
+        Deposit deposit = _lockedDeposits[depositId];
         tvm.accept();
-        _confirmTransaction(txn, 0);
+
+        delete _lockedDeposits[depositId];
+        tvm.rawReserve(_reserve(), 0);
+        _mint(amount, deposit.owner, deployWalletValue, remainingGasTo, notify, payload);
+    }
+
+
+    function confirmTransaction(uint64 trId, uint128 votes) public {
+        _removeExpiredTransactions();
+        Transaction txn = _transactions[trId];
+        tvm.accept();
+
+        if ((txn.votesReceived + votes) >= txn.votesRequired) {
+            if (txn.stateInit.hasValue()) {
+                txn.dest.transfer({
+                    value: txn.value,
+                    bounce: txn.bounce,
+                    flag: txn.sendFlags,
+                    body: txn.payload,
+                    stateInit: txn.stateInit.get()
+                });
+            } else {
+                txn.dest.transfer({
+                    value: txn.value,
+                    bounce: txn.bounce,
+                    flag: txn.sendFlags,
+                    body: txn.payload
+                });
+            }
+            delete _transactions[txn.id];
+        } else {
+            txn.votesReceived += votes;
+            _transactions[txn.id] = txn;
+        }
     }
 
     function _getExpirationBound() inline private view returns (uint64) {
@@ -184,10 +256,69 @@ contract ShareTokenRoot is TokenRoot {
         }
     }
 
+    function onAcceptTokensTransfer(
+        address tokenRoot,
+        uint128 amount,
+        address sender,
+        address senderWallet,
+        address remainingGasTo,
+        TvmCell payload
+    ) public override {
+        require(amount > 0, ErrorCodes.INVALID_DEPOSIT_VALUE);
+        require(_walletAddresses.exists(tokenRoot), ErrorCodes.INVALED_CURREMCY_ROOT);
+        // TODO: add infastructure to ensure deposit was allowed
+        tvm.accept();
 
+        uint64 depositId = _generateId();
+        Deposit deposit = Deposit({
+            amount: amount,
+            lockedUntil: now + _depositLock,
+            assetRoot: tokenRoot,
+            owner: sender
+        });
+        _lockedDeposits[depositId] = deposit;
+    }
 
-    // TODO: ensure support minting by root
-    // TODO: ensure support burning by root
-    // TODO: proposals infastructure
-    // TODO: add ability to call anything from multisig
+    function unlockValue(uint64 depositId) public {
+        require(_lockedDeposits.exists(depositId), ErrorCodes.DEPOSIT_DOES_NOT_EXIST);
+        Deposit deposit = _lockedDeposits[depositId];
+        require(deposit.lockedUntil < now, ErrorCodes.DEPOSIT_IS_LOCKED);
+        require(deposit.owner == msg.sender || msg.sender == address(this), ErrorCodes.DEPOSIT_OWNER_MISMATCH);
+        tvm.accept();
+
+        delete _lockedDeposits[depositId];
+        TvmCell emptyCell;
+        ITokenWallet(_walletAddresses[deposit.assetRoot]).transfer(
+            deposit.amount,
+            deposit.owner,
+            0,
+            address(this),
+            false,
+            emptyCell
+        );
+    }
+
+    function onAcceptTokensBurn(
+        uint128 amount,
+        address walletOwner,
+        address wallet,
+        address remainingGasTo,
+        TvmCell payload
+    ) external onlyRootOwner override {
+        tvm.accept();
+        TvmSlice slice = payload.toSlice();
+        if (!slice.empty()) {
+            (address cbdcRoot, uint128 cbdcAmount, address receiver) = slice.decode(address, uint128, address);
+            require(_walletAddresses.exists(cbdcRoot), ErrorCodes.CURRENCY_NOT_SUPPORTED);
+            TvmCell emptyCell;
+            ITokenWallet(_walletAddresses[cbdcRoot]).transfer(
+                cbdcAmount,
+                receiver,
+                0,
+                remainingGasTo,
+                false,
+                emptyCell
+            );
+        }
+    }
 }

@@ -58,6 +58,7 @@ contract BaseCard is
     }
 
     constructor(TvmCell _cardDetails) public {
+        tvm.accept();
         TvmSlice cardDetails = _cardDetails.toSlice();
         (address _currency, address _owner, address _bank) = cardDetails.decode(address, address, address);
 
@@ -70,11 +71,10 @@ contract BaseCard is
 
     function updateCrusialParams()
         public
+        virtual
         onlyOwner
     {
         tvm.accept();
-        // TODO: move to card type implementation
-        // IBank(bank).getWalletAddress{callback : BaseCard.onBankWalletAddressUpdated}(currency);
     }
 
     function getCode () public responsible returns (TvmCell) {
@@ -125,6 +125,7 @@ contract BaseCard is
     {
         bankWallet = _wallet;
     }
+
     function onAcceptTokensMint(
         address _wallet
     )

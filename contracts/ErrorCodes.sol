@@ -27,4 +27,15 @@ library ErrorCodes {
     uint16 constant INVALID_QUORUM_RATE = 1127;
     uint16 constant LOW_PROPOSER_BALANCE = 1128;
     uint16 constant SENDER_IS_NOT_VALID_WALLET = 1129;
+    uint16 constant ALREADY_VOTED = 1130;
+    uint16 constant NOT_ENOUGH_VOTES = 1131;
+    uint16 constant NOT_VOTED = 1132;
+    uint16 constant NOT_TRANSFERABLE = 1133;
+    uint16 constant INVALID_DEPOSIT_VALUE = 1134;
+    uint16 constant DEPOSIT_DOES_NOT_EXIST = 1135;
+    uint16 constant DEPOSIT_IS_LOCKED = 1136;
+    uint16 constant DEPOSIT_OWNER_MISMATCH = 1137;
+    uint16 constant INVALED_CURREMCY_ROOT = 1138;
+    uint16 constant CURRENCY_NOT_SUPPORTED = 1139;
+    uint16 constant INVALID_BURN_VALUE = 1140;
 }

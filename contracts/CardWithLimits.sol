@@ -60,6 +60,15 @@ contract CardWithLimits is BaseCard {
         _updateSpendingLimit(_dailyLimit, _monthlyLimit);
     }
 
+    function updateCrusialParams()
+        public
+        override
+        onlyOwner
+    {
+        super.updateCrusialParams();
+        IBank(bank).getWalletAddress{callback : BaseCard.onBankWalletAddressUpdated}(currency);
+    }
+
     // INTERNAL
 
     function _validateTransfer(
