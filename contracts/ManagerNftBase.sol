@@ -36,6 +36,7 @@ contract ManagerNftBase is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft {
         codeIndex
     )
     public {
+        tvm.accept();
         _manager = manager;
     }
 

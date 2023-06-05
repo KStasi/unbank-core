@@ -25,6 +25,7 @@ contract CardWithLimits is BaseCard {
     uint256 public nextMonth;
 
     constructor(TvmCell _cardDetails) BaseCard(_cardDetails) public {
+        tvm.accept();
         cardType = CardType.DEBIT;
 
         TvmSlice cardDetails = _cardDetails.toSlice();
@@ -54,7 +55,7 @@ contract CardWithLimits is BaseCard {
         uint128 _monthlyLimit
     )
         public
-        onlyBank
+        onlyOwner
     {
         tvm.accept();
         _updateSpendingLimit(_dailyLimit, _monthlyLimit);

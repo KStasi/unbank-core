@@ -11,13 +11,15 @@ import "./CardsRegistry.sol";
 import "./BaseCard.sol";
 import "./RetailAccount.sol";
 
+// TODO: add index for all accounts
 contract RetailAccountFactory {
 
-    TvmCell _accountCode;
-    address _cardsRegistry;
-    address _bank;
-    address _managerCollection;
-    uint128 _initialAmount;
+    TvmCell public _accountCode;
+    address public _cardsRegistry;
+    address public _bank;
+    address public _managerCollection;
+    uint128 public _initialAmount;
+    address public _requestsRegistry;
 
     modifier onlyManagerCollection() {
         require(msg.sender == _managerCollection, ErrorCodes.NOT_REGULAR_MANAGER);
@@ -29,13 +31,21 @@ contract RetailAccountFactory {
         _;
     }
 
-    constructor(TvmCell code, address cardsRegistry, address bank, address managerCollection, uint128 initialAmount) public {
+    constructor(
+        TvmCell code,
+        address cardsRegistry,
+        address bank,
+        address requestsRegistry,
+        address managerCollection,
+        uint128 initialAmount
+    ) public {
         tvm.accept();
         _accountCode = code;
         _cardsRegistry = cardsRegistry;
         _bank = bank;
         _managerCollection = managerCollection;
         _initialAmount = initialAmount;
+        _requestsRegistry = requestsRegistry;
     }
 
     function deployRetailAccount(uint128 pubkey) public onlyManagerCollection returns (address) {
@@ -44,7 +54,7 @@ contract RetailAccountFactory {
             flag: 0,
             pubkey: pubkey,
             code: _accountCode
-        }(_cardsRegistry, _bank);
+        }(_cardsRegistry, _bank, _requestsRegistry, _managerCollection);
 
         return newRetailAccount;
     }

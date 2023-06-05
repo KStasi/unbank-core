@@ -36,7 +36,7 @@ contract BaseCard is
     bool public isActive = true;
 
     CardType public cardType;
-    uint128 constant DEPLOY_WALLET_VALUE = 1000000;
+    uint128 constant DEPLOY_WALLET_VALUE = 1000000; // TODO: make upgradable
 
     modifier onlyAllowedTokenRoot(address _tokenRoot) {
         require(_tokenRoot == currency, ErrorCodes.NOT_TOKEN_ROOT);
@@ -52,6 +52,7 @@ contract BaseCard is
         require(msg.sender == bank && msg.sender.value != 0, ErrorCodes.NOT_BANK);
         _;
     }
+
     modifier onlyWallet() {
         require(msg.sender == wallet && msg.sender.value != 0, ErrorCodes.NOT_WALLET);
         _;
@@ -87,7 +88,7 @@ contract BaseCard is
         TvmCell _payload
     )
         public
-        onlyBank
+        onlyOwner
     {
         tvm.accept();
         require(_amount > 0, ErrorCodes.ZERO_AMOUNT);
@@ -109,7 +110,7 @@ contract BaseCard is
         bool _isActive
     )
         public
-        onlyBank
+        onlyOwner
     {
         tvm.accept();
         isActive = _isActive;

@@ -18,6 +18,7 @@ contract SavingCard is BaseCard {
     uint128 public cacheValidity = 30 minutes;
 
     constructor(TvmCell _cardDetails, uint128 _targetAmount) BaseCard(_cardDetails) public {
+        tvm.accept();
         cardType = CardType.SAVINGS;
 
         TvmSlice cardDetails = _cardDetails.toSlice();

@@ -9,6 +9,7 @@ import "@broxus/contracts/contracts/utils/CheckPubKey.tsol";
 import "./ErrorCodes.sol";
 import "./CardsRegistry.sol";
 import "./BaseCard.sol";
+import "./CardWithLimits.sol";
 
 contract RetailAccount is
     ExternalOwner,
@@ -19,6 +20,8 @@ contract RetailAccount is
     mapping(address => bool) public cards;
     bool public isActive;
     address public cardsRegistry;
+    address public _requestsRegistry;
+    address public _managerCollection;
     address public bank;
 
     modifier onlyActive() {
@@ -27,20 +30,32 @@ contract RetailAccount is
     }
 
     modifier onlyBank() {
-        require(msg.sender == bank, ErrorCodes.NOT_REGULAR_MANAGER);
+        require(msg.sender == bank, ErrorCodes.NOT_BANK);
         _;
     }
 
     modifier onlyCardsRegistry() {
-        require(msg.sender == cardsRegistry, ErrorCodes.NOT_REGULAR_MANAGER);
+        require(msg.sender == cardsRegistry, ErrorCodes.NOT_CARD_REGISTRY);
         _;
     }
 
-    constructor(address _cardsRegistry, address _bank) public checkPubKey {
+    modifier onlyRequestsRegistry() {
+        require(msg.sender == _requestsRegistry, ErrorCodes.NOT_REQUESTS_REGISTRY);
+        _;
+    }
+
+    modifier onlyManagerCollection() {
+        require(msg.sender == _managerCollection, ErrorCodes.NOT_MANAGER_COLLECTION);
+        _;
+    }
+
+    constructor(address _cardsRegistry, address _bank, address requestsRegistry, address managerCollection) public checkPubKey {
         tvm.accept();
 
         cardsRegistry = _cardsRegistry;
         bank = _bank;
+        _requestsRegistry = requestsRegistry;
+        _managerCollection = managerCollection;
 
         setOwnership(msg.pubkey());
     }
@@ -52,7 +67,7 @@ contract RetailAccount is
     )
         public
         view
-        onlyBank
+        onlyManagerCollection
     {
         tvm.accept();
 
@@ -78,40 +93,50 @@ contract RetailAccount is
         cards[_newCard] = true;
     }
 
-    // TODO: should we allow access to cards only via accounts or directly?
-    // -------------------------------------------------------------------
-    // function setCardActivation(
-    //     address _card,
-    //     bool _isActive
-    // )
-    //     public
-    //     view
-    //     onlyBank
-    // {
-    //     tvm.accept();
-    //     require(cards.exists(_card), ErrorCodes.NOT_CARD_OF_ACCOUNT);
+    function setCardActivation(
+        address _card,
+        bool _isActive
+    )
+        public
+        view
+        onlyManagerCollection
+    {
+        tvm.accept();
+        require(cards.exists(_card), ErrorCodes.NOT_CARD_OF_ACCOUNT);
 
-    //     BaseCard(_card).setCardActivation(_isActive);
-    // }
+        BaseCard(_card).setCardActivation(_isActive);
+    }
 
-    // function setSpendingLimits(
-    //     address _card,
-    //     uint128 _dailyLimit,
-    //     uint128 _monthlyLimit
-    // )
-    //     public
-    //     view
-    //     onlyBank
-    // {
-    //     tvm.accept();
-    //     require(cards.exists(_card), ErrorCodes.NOT_CARD_OF_ACCOUNT);
+    function setSpendingLimits(
+        address _card,
+        uint128 _dailyLimit,
+        uint128 _monthlyLimit
+    )
+        public
+        view
+        onlyRequestsRegistry
+    {
+        tvm.accept();
+        require(cards.exists(_card), ErrorCodes.NOT_CARD_OF_ACCOUNT);
 
-    //     BaseCard(_card).updateSpendingLimit(_dailyLimit, _monthlyLimit);
-    // }
+        CardWithLimits(_card).updateSpendingLimit(_dailyLimit, _monthlyLimit);
+    }
 
-    // TODO: add transfer to bank
+    function transferToBank(
+        address _card,
+        uint128 _amount,
+        TvmCell _payload
+    )
+        public
+        view
+        onlyManagerCollection
+    {
+        tvm.accept();
+        require(cards.exists(_card), ErrorCodes.NOT_CARD_OF_ACCOUNT);
+        BaseCard(_card).transferToBank(_amount, _payload);
+    }
+
     // TODO: remove transfer to bank; >>>> move to banks level
-    // -------------------------------------------------------------
 
     // TODO: create autopayments
     // TODO: cancel autopayments
@@ -120,7 +145,7 @@ contract RetailAccount is
         bool _isActive
     )
         public
-        onlyBank
+        onlyManagerCollection
     {
         tvm.accept();
         isActive = _isActive;

@@ -8,6 +8,7 @@ contract CardsRegistry {
     mapping(uint128 => TvmCell) public cardsCode;
 
     constructor() public {
+        tvm.accept();
     }
 
     function deployCard(

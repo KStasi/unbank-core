@@ -12,13 +12,15 @@ import "./interfaces/IBank.sol";
 import "./ShareTokenRoot.sol";
 
 contract ShareTokenWallet is TokenWallet {
-    uint128 public _frozenBalance;
+    uint128 public _frozenBalance = 0;
     mapping(uint64 /*proposal_id*/ => uint128 /*locked_value*/) public castedVotes;
 
     constructor()
         public
         TokenWallet()
-    {}
+    {
+        tvm.accept();
+    }
 
     function submitProposal(
         address dest,
