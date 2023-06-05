@@ -40,4 +40,5 @@ library ErrorCodes {
     uint16 constant INVALID_BURN_VALUE = 1140;
     uint16 constant NOT_CARD_REGISTRY = 1141;
     uint16 constant NOT_REQUESTS_REGISTRY = 1142;
+    uint16 constant SENDER_IS_NOT_PROPOSAL = 1143;
 }
