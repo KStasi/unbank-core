@@ -35,6 +35,7 @@ const config: LockliftConfig = {
     // Specify config for extarnal contracts as in exapmple
     externalContracts: {
       "node_modules/tip3/build": ["TokenRoot", "TokenWallet"],
+      "precompiled/indexes": ["Index", "IndexBasis"],
     },
   },
   linker: {

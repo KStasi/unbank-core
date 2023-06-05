@@ -27,8 +27,9 @@ contract Bank is
         _;
     }
 
-    constructor(address owner) public {
+    constructor(address owner, address chiefManagerCollection) public {
         tvm.accept();
+        _chiefManagerCollection = chiefManagerCollection;
         setOwnership(owner);
     }
 

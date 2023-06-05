@@ -1,6 +1,10 @@
 pragma ever-solidity >= 0.61.2;
 
 import "./BaseCard.sol";
+// import "./utils/RandomNonce.sol";
+
+// TODO: add random nonce where it's needed
+// TODO: add static variables for all contracts where it's needed
 
 contract CardsRegistry {
     uint128 public initialDeposit = 0.1 ever;
@@ -17,12 +21,12 @@ contract CardsRegistry {
         public responsible
         returns (address tokenWallet)
     {
+        // TODO: ensure called from account
         tvm.accept();
         TvmCell cardCode = cardsCode[_cardTypeId];
         // TODO: update to make it work & make contract upgradable
         address newCard = new BaseCard{value: initialDeposit, code: cardCode}(_cardDetails);
 
-        // TODO: should we replace callback with specific call to sender for security?
         return { value: 0, flag: 64, bounce: false } newCard;
     }
 }

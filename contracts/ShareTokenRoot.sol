@@ -1,10 +1,10 @@
 pragma ever-solidity >= 0.61.2;
 
 pragma AbiHeader expire;
-pragma AbiHeader pubkey;
+// pragma AbiHeader pubkey;
 
-import "@broxus/contracts/contracts/access/InternalOwner.tsol";
-import "@broxus/contracts/contracts/utils/RandomNonce.tsol";
+// import "@broxus/contracts/contracts/access/InternalOwner.tsol";
+// import "@broxus/contracts/contracts/utils/RandomNonce.tsol";
 import "tip3/contracts/interfaces/IBurnableByRootTokenWallet.sol";
 import "tip3/contracts/interfaces/IAcceptTokensTransferCallback.sol";
 import "tip3/contracts/interfaces/IAcceptTokensBurnCallback.sol";
@@ -46,6 +46,12 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
         address owner;
     }
 
+
+    struct Shares{
+        uint128 amount;
+        address owner;
+    }
+
     uint8   constant MAX_QUEUED_REQUESTS = 5;
     uint32  constant DEFAULT_LIFETIME = 3600; // lifetime is 1 hour
     uint32  constant MIN_LIFETIME = 10; // 10 secs
@@ -73,11 +79,11 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
     uint32 _lifetime;
     uint128 _minProposerBalance;
     uint32 _depositLock = 30 * 24 * 3600;
-    uint128 _deployWalletValue = 1000000;
+    uint128 _deployWalletValue = 0.5 ever;
 
     function _initialize(
         uint128 minProposerBalance,
-        uint8 defaultQuorumRate,
+        uint32 defaultQuorumRate,
         uint32 lifetime
     ) inline private {
         require(defaultQuorumRate > 0 && defaultQuorumRate <= QUORUM_BASE, ErrorCodes.INVALID_QUORUM_RATE);
@@ -93,8 +99,10 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
 
 
     constructor(
-        uint8 defaultQuorumRate,
-        uint32 lifetime
+        uint32 defaultQuorumRate,
+        uint32 lifetime,
+        Shares[] initialShares
+
     )
         public
         TokenRoot (
@@ -109,6 +117,11 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
     {
         tvm.accept();
         rootOwner_ = address(this);
+
+        TvmCell empty;
+        for (Shares shares : initialShares) {
+            _mint(shares.amount, shares.owner, _deployWalletValue, msg.sender, false, empty);
+        }
     }
 
     function addWallet(address currencyRoot) public onlyRootOwner {
