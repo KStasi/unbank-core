@@ -12,53 +12,53 @@ import "./interfaces/IBank.sol";
 import "./BaseCard.sol";
 
 contract CardWithLimits is BaseCard {
-    uint128 public dailyLimit = 0;
-    uint128 public monthlyLimit = 0;
+    uint128 public _dailyLimit = 0;
+    uint128 public _monthlyLimit = 0;
 
-    uint256 public dailySpent;
-    uint256 public monthlySpent;
+    uint256 public _dailySpent;
+    uint256 public _monthlySpent;
 
     // Limit resets every 24 hours
-    uint256 public nextDay;
+    uint256 public _nextDay;
 
     // Limit resets every 30 days
-    uint256 public nextMonth;
+    uint256 public _nextMonth;
 
-    constructor(TvmCell _cardDetails) BaseCard(_cardDetails) public {
+    constructor(TvmCell cardDetails) BaseCard(cardDetails) public {
         tvm.accept();
-        cardType = CardType.DEBIT;
+        _cardType = CardType.DEBIT;
 
-        TvmSlice cardDetails = _cardDetails.toSlice();
-        (address _currency) = cardDetails.decode(address);
+        TvmSlice cardDetailsSlice = cardDetails.toSlice();
+        (address currency) = cardDetailsSlice.decode(address);
 
-        IBank(bank).getDefaultSpending{callback : CardWithLimits.setDefaultSpendingLimitsOnInit}(currency);
+        IBank(_bank).getDefaultSpending{callback : CardWithLimits.setDefaultSpendingLimitsOnInit}(currency);
     }
 
     function setDefaultSpendingLimitsOnInit(
-        address _currency,
-        uint128 _dailyLimit,
-        uint128 _monthlyLimit
+        address currency,
+        uint128 dailyLimit,
+        uint128 monthlyLimit
     )
         public
         onlyBank
     {
         tvm.accept();
         require(_currency == currency, ErrorCodes.NOT_CURRENCY);
-        require(dailyLimit == 0, ErrorCodes.NON_ZERO_DAILY_LIMIT);
-        require(monthlyLimit == 0, ErrorCodes.NON_ZERO_MONTHLY_LIMIT);
+        require(_dailyLimit == 0, ErrorCodes.NON_ZERO_DAILY_LIMIT);
+        require(_monthlyLimit == 0, ErrorCodes.NON_ZERO_MONTHLY_LIMIT);
 
-        _updateSpendingLimit(_dailyLimit, _monthlyLimit);
+        _updateSpendingLimit(dailyLimit, monthlyLimit);
     }
 
     function updateSpendingLimit(
-        uint128 _dailyLimit,
-        uint128 _monthlyLimit
+        uint128 dailyLimit,
+        uint128 monthlyLimit
     )
         public
         onlyOwner
     {
         tvm.accept();
-        _updateSpendingLimit(_dailyLimit, _monthlyLimit);
+        _updateSpendingLimit(dailyLimit, monthlyLimit);
     }
 
     function updateCrusialParams()
@@ -67,53 +67,53 @@ contract CardWithLimits is BaseCard {
         onlyOwner
     {
         super.updateCrusialParams();
-        IBank(bank).getWalletAddress{callback : BaseCard.onBankWalletAddressUpdated}(currency);
+        IBank(_bank).getWalletAddress{callback : BaseCard.onBankWalletAddressUpdated}(_currency);
     }
 
     // INTERNAL
 
     function _validateTransfer(
-        uint128 _amount,
-        TvmCell _payload)
+        uint128 amount,
+        TvmCell payload)
         internal
         override
     {
-        BaseCard._validateTransfer(_amount, _payload);
-        _validate(_amount);
+        super._validateTransfer(amount, payload);
+        _validate(amount);
     }
 
     function _validate(
-        uint128 _amount
+        uint128 amount
     )
         internal
     {
-        while(block.timestamp >= nextDay) {
-            nextDay += 1 days;
-            dailySpent = 0;
+        while(block.timestamp >= _nextDay) {
+            _nextDay += 1 days;
+            _dailySpent = 0;
         }
 
-        while(block.timestamp >= nextMonth) {
-            nextMonth += 30 days;
-            monthlySpent = 0;
+        while(block.timestamp >= _nextMonth) {
+            _nextMonth += 30 days;
+            _monthlySpent = 0;
         }
 
-        require(dailySpent + _amount <= dailyLimit, ErrorCodes.DAILY_LIMIT_REACHED);
-        require(monthlySpent + _amount <= monthlyLimit, ErrorCodes.MONTHLY_LIMIT_REACHED);
+        require(_dailySpent + amount <= _dailyLimit, ErrorCodes.DAILY_LIMIT_REACHED);
+        require(_monthlySpent + amount <= _monthlyLimit, ErrorCodes.MONTHLY_LIMIT_REACHED);
 
-        dailySpent += _amount;
-        monthlySpent += _amount;
+        _dailySpent += amount;
+        _monthlySpent += amount;
     }
 
     function _updateSpendingLimit(
-        uint128 _dailyLimit,
-        uint128 _monthlyLimit
+        uint128 dailyLimit,
+        uint128 monthlyLimit
     )
         internal
     {
-        require(_dailyLimit > 0, ErrorCodes.ZERO_DAILY_LIMIT);
-        require(_monthlyLimit > 0, ErrorCodes.ZERO_MONTHLY_LIMIT);
+        require(dailyLimit > 0, ErrorCodes.ZERO_DAILY_LIMIT);
+        require(monthlyLimit > 0, ErrorCodes.ZERO_MONTHLY_LIMIT);
 
-        dailyLimit = _dailyLimit;
-        monthlyLimit = _monthlyLimit;
+        _dailyLimit = dailyLimit;
+        _monthlyLimit = monthlyLimit;
     }
 }

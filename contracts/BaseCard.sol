@@ -23,51 +23,51 @@ contract BaseCard is
         SAVINGS
     }
 
-    address public bank;
-    address public bankWallet;
-    address public currency;
-    address public wallet;
+    address public _bank; // TODO: make static
+    address public _bankWallet;
+    address public _currency; // TODO: make static
+    address public _wallet;
 
     // dev: not needed since we have wallet.balance
     // uint128 public totalBalance = 0;
-    uint128 public delegatedBalance = 0; // transfered for bank's direct management
-    uint128 public frozenBalance = 0;
+    uint128 public _delegatedBalance = 0; // transfered for bank's direct management
+    uint128 public _frozenBalance = 0;
 
-    bool public isActive = true;
+    bool public _isActive = true;
 
-    CardType public cardType;
+    CardType public _cardType; // TODO: make static
     uint128 constant DEPLOY_WALLET_VALUE = 1000000; // TODO: make upgradable
 
-    modifier onlyAllowedTokenRoot(address _tokenRoot) {
-        require(_tokenRoot == currency, ErrorCodes.NOT_TOKEN_ROOT);
+    modifier onlyAllowedTokenRoot(address tokenRoot) {
+        require(tokenRoot == _currency, ErrorCodes.NOT_TOKEN_ROOT);
         _;
     }
 
     modifier onlyCurrency() {
-        require(msg.sender == currency && msg.sender.value != 0, ErrorCodes.NOT_CURRENCY);
+        require(msg.sender == _currency && msg.sender.value != 0, ErrorCodes.NOT_CURRENCY);
         _;
     }
 
     modifier onlyBank() {
-        require(msg.sender == bank && msg.sender.value != 0, ErrorCodes.NOT_BANK);
+        require(msg.sender == _bank && msg.sender.value != 0, ErrorCodes.NOT_BANK);
         _;
     }
 
     modifier onlyWallet() {
-        require(msg.sender == wallet && msg.sender.value != 0, ErrorCodes.NOT_WALLET);
+        require(msg.sender == _wallet && msg.sender.value != 0, ErrorCodes.NOT_WALLET);
         _;
     }
 
-    constructor(TvmCell _cardDetails) public {
+    constructor(TvmCell cardDetails) public {
         tvm.accept();
-        TvmSlice cardDetails = _cardDetails.toSlice();
-        (address _currency, address _owner, address _bank) = cardDetails.decode(address, address, address);
+        TvmSlice cardDetailsSlice = cardDetails.toSlice();
+        (address currency, address owner, address bank) = cardDetailsSlice.decode(address, address, address);
 
-        setOwnership(_owner);
-        currency = _currency;
-        bank =  _bank;
+        setOwnership(owner);
+        _currency = currency;
+        _bank =  bank;
 
-        ITokenRoot(_currency).deployWallet{callback: BaseCard.onWalletCreated}(address(this), DEPLOY_WALLET_VALUE);
+        ITokenRoot(currency).deployWallet{callback: BaseCard.onWalletCreated}(address(this), DEPLOY_WALLET_VALUE);
     }
 
     function updateCrusialParams()
@@ -84,51 +84,51 @@ contract BaseCard is
 
     // dev: must be approved by bank's managers
     function transferToBank(
-        uint128 _amount,
-        TvmCell _payload
+        uint128 amount,
+        TvmCell payload
     )
         public
         onlyOwner
     {
         tvm.accept();
-        require(_amount > 0, ErrorCodes.ZERO_AMOUNT);
+        require(amount > 0, ErrorCodes.ZERO_AMOUNT);
 
         // dev: use bank's wallet instead of bank as a receiver to be able to
         // replace the address in case the logic of assets management is changed.
-        ITokenWallet(wallet).transferToWallet(
-            _amount,
-            bankWallet,
+        ITokenWallet(_wallet).transferToWallet(
+            amount,
+            _bankWallet,
             address(this),
             true,
-            _payload);
+            payload);
 
-        delegatedBalance += _amount;
-        frozenBalance += _amount;
+        _delegatedBalance += amount;
+        _frozenBalance += amount;
     }
 
     function setCardActivation(
-        bool _isActive
+        bool isActive
     )
         public
         onlyOwner
     {
         tvm.accept();
-        isActive = _isActive;
+        _isActive = isActive;
     }
 
     // TODO: emergency withdrawal
 
     function onBankWalletAddressUpdated(
-        address _wallet
+        address wallet
     )
         public
         onlyBank
     {
-        bankWallet = _wallet;
+        _bankWallet = wallet;
     }
 
     function onAcceptTokensMint(
-        address _wallet
+        address wallet
     )
         public
         onlyCurrency
@@ -137,7 +137,7 @@ contract BaseCard is
     }
 
     function onAcceptTokensBurn(
-        address _wallet
+        address wallet
     )
         public
         onlyCurrency
@@ -146,89 +146,90 @@ contract BaseCard is
     }
 
     function onAcceptTokensTransfer(
-        address _tokenRoot,
-        uint128 _amount,
-        address _sender,
-        address _senderWallet,
-        address _remainingGasTo,
-        TvmCell _payload)
+        address tokenRoot,
+        uint128 amount,
+        address sender,
+        address senderWallet,
+        address remainingGasTo,
+        TvmCell payload)
         public
-        onlyAllowedTokenRoot(_tokenRoot)
+        onlyAllowedTokenRoot(tokenRoot)
     {
         tvm.accept();
-        if (_senderWallet == bankWallet) {
+        if (senderWallet == _bankWallet) {
             // TODO: parse payload to ensure it's a transfer to return funds from the bank
-            delegatedBalance -= _amount;
-            frozenBalance -= _amount;
+            _delegatedBalance -= amount;
+            _frozenBalance -= amount;
         }
         // TODO: do something on transfer to the wallet
     }
 
 
     function onWalletCreated(
-        address _wallet
+        address wallet
     )
         public
         onlyCurrency
     {
         tvm.accept();
-        require(wallet == address(0), ErrorCodes.WALLET_ALREADY_CREATED);
-        wallet = _wallet;
+        require(_wallet == address(0), ErrorCodes.WALLET_ALREADY_CREATED);
+        _wallet = wallet;
     }
 
     function transferToWallet(
-        uint128 _amount,
-        address _recipientTokenWallet,
-        address _remainingGasTo,
-        bool _notify,
-        TvmCell _payload
+        uint128 amount,
+        address recipientTokenWallet,
+        address remainingGasTo,
+        bool notify,
+        TvmCell payload
     )
 
         public
         onlyOwner
     {
         tvm.accept();
-        _validateTransfer(_amount, _payload);
+        _validateTransfer(amount, payload);
 
-        ITokenWallet(wallet).transferToWallet(
-            _amount,
-            _recipientTokenWallet,
-            _remainingGasTo,
-            _notify,
-            _payload);
+        ITokenWallet(_wallet).transferToWallet(
+            amount,
+            recipientTokenWallet,
+            remainingGasTo,
+            notify,
+            payload);
     }
 
     function transfer(
-        uint128 _amount,
-        address _recipient,
-        uint128 _deployWalletValue,
-        address _remainingGasTo,
-        bool _notify,
-        TvmCell _payload
+        uint128 amount,
+        address recipient,
+        uint128 deployWalletValue,
+        address remainingGasTo,
+        bool notify,
+        TvmCell payload
     )
 
         public
         onlyOwner
     {
         tvm.accept();
-        _validateTransfer(_amount, _payload);
+        _validateTransfer(amount, payload);
 
-        ITokenWallet(wallet).transfer(
-            _amount,
-            _recipient,
-            _deployWalletValue,
-            _remainingGasTo,
-            _notify,
-            _payload);
+        ITokenWallet(_wallet).transfer(
+            amount,
+            recipient,
+            deployWalletValue,
+            remainingGasTo,
+            notify,
+            payload);
     }
 
     // INTERNAL
 
     function _validateTransfer(
-        uint128 _amount,
-        TvmCell _payload)
-        internal virtual {
-        require(_amount > 0, ErrorCodes.ZERO_AMOUNT);
-        require(isActive, ErrorCodes.CARD_NOT_ACTIVE);
+        uint128 amount,
+        TvmCell payload)
+        internal virtual
+    {
+        require(amount > 0, ErrorCodes.ZERO_AMOUNT);
+        require(_isActive, ErrorCodes.CARD_NOT_ACTIVE);
     }
 }

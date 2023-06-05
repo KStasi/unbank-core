@@ -7,8 +7,10 @@ import "@broxus/contracts/contracts/access/InternalOwner.tsol";
 import "@broxus/contracts/contracts/utils/RandomNonce.tsol";
 import "@broxus/contracts/contracts/utils/CheckPubKey.tsol";
 import "tip3/contracts/interfaces/ITokenRoot.sol";
+import "tip3/contracts/interfaces/ITokenWallet.sol";
 import "./interfaces/IBank.sol";
 import "./ErrorCodes.sol";
+
 
 contract Bank is
     InternalOwner,
@@ -18,14 +20,17 @@ contract Bank is
     uint8 constant MAX_CBDC_COUNT = 10;
     mapping(address => CbdcInfo) public _supportedCbdc;
     mapping(address => address) public _walletAddresses; // currency => wallet
+    address public _chiefManagerCollection;
+
+    modifier onlyChiefManagerCollection() {
+        require(msg.sender == _chiefManagerCollection, ErrorCodes.NOT_CHIEF_MANAGER_COLLECTION);
+        _;
+    }
 
     constructor(address owner) public {
         tvm.accept();
         setOwnership(owner);
     }
-
-    // TODO: request transfers from wallet to bank
-    // TODO: request transfers back from bank to wallet
 
     function addWallet(address currencyRoot, uint128 deployWalletValue) public onlyOwner {
         require(!_walletAddresses.exists(currencyRoot), ErrorCodes.WALLET_ALREADY_CREATED);
@@ -74,7 +79,50 @@ contract Bank is
                 _supportedCbdc.add(cbdcAddress, cbdcInfo);
             }
         }
+    }
+
+    // TODO: add logic on receiving currencies
+
+    function transferToCard(
+        address currency,
+        uint128 amount,
+        address cardAddress,
+        uint128 deployWalletValue,
+        address remainingGasTo,
+        bool notify,
+        TvmCell payload
+    )
+        public
+        view
+        onlyChiefManagerCollection
+    {
+        require(_walletAddresses.exists(currency), ErrorCodes.CBDC_NOT_SUPPORTED);
+        tvm.accept();
+
+        address wallet = _walletAddresses.at(currency);
+
+        ITokenWallet(wallet).transfer(
+            amount,
+            cardAddress,
+            deployWalletValue,
+            remainingGasTo,
+            notify,
+            payload);
 
     }
 
+    function sendTransaction(
+        address dest,
+        uint128 value,
+        bool bounce,
+        uint8 flags,
+        TvmCell payload
+    )
+        public
+        view
+        onlyOwner
+    {
+        tvm.accept();
+        dest.transfer(value, bounce, flags, payload);
+    }
 }
