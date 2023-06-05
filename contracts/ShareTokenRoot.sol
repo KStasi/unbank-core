@@ -111,7 +111,7 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
         rootOwner_ = address(this);
     }
 
-    function addCurrency(address currencyRoot) public onlyRootOwner {
+    function addWallet(address currencyRoot) public onlyRootOwner {
         require(!_walletAddresses.exists(currencyRoot), ErrorCodes.WALLET_ALREADY_CREATED);
         tvm.accept();
         ITokenRoot root = ITokenRoot(currencyRoot);
