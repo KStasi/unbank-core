@@ -5,6 +5,7 @@
   "scripts": {
     "compile": "npx locklift build",
     "deploy-local": "locklift deploy --network local",
+    "start-node": "docker run -d --name local-node -e USER_AGREEMENT=yes -p80:80 tonlabs/local-node",
     "test": "npx locklift test --network local"
   },
   "author": "",

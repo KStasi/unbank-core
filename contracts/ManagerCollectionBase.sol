@@ -6,6 +6,7 @@ pragma AbiHeader pubkey;
 
 import '@itgold/everscale-tip/contracts/TIP4_2/TIP4_2Collection.sol';
 import '@itgold/everscale-tip/contracts/TIP4_3/TIP4_3Collection.sol';
+import 'tip3/contracts/libraries/TokenMsgFlag.sol';
 import './ManagerNftBase.sol';
 import './ErrorCodes.sol';
 
@@ -52,9 +53,6 @@ contract ManagerCollectionBase is TIP4_2Collection, TIP4_3Collection {
         address owner,
         address manager
     ) internal virtual {
-        require(msg.value > _remainOnNft + 0.1 ton, ErrorCodes.NOT_ENOUGH_RESERVE);
-        tvm.rawReserve(0, 4); // TODO: stop panic and decide what to do with it
-
         (int8 _wid, uint addr) = owner.unpack();
         uint256 id = uint256(addr);
         _totalSupply++;
@@ -65,7 +63,7 @@ contract ManagerCollectionBase is TIP4_2Collection, TIP4_3Collection {
         address nftAddr = new ManagerNftBase{
             stateInit: stateNft,
             value: 0,
-            flag: 128
+            flag: TokenMsgFlag.SENDER_PAYS_FEES
         }(
             owner,
             manager,

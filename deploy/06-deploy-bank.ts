@@ -24,6 +24,7 @@ export default async () => {
     deploymentName: bankContractName,
     enableLogs: true,
   });
+  // TODO: add currencies
 };
 
 export const tag = "Bank";

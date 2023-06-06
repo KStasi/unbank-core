@@ -30,6 +30,8 @@ export default async () => {
     deploymentName: accountFactoryContractName,
     enableLogs: true,
   });
+
+  // TODO: deploy an account and add cards
 };
 
 export const tag = "Bank";

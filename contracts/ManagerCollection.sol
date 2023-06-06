@@ -9,12 +9,18 @@ import './ManagerNftBase.sol';
 import './ErrorCodes.sol';
 
 contract ManagerCollection is ManagerCollectionBase {
+    struct Manager {
+        address owner;
+        address manager;
+        string json;
+    }
     constructor(
         TvmCell codeNft,
         string json,
         TvmCell codeIndex,
         TvmCell codeIndexBasis,
-        address admin
+        address admin,
+        Manager[] initialManagers
     ) ManagerCollectionBase (
         codeNft,
         json,
@@ -24,6 +30,9 @@ contract ManagerCollection is ManagerCollectionBase {
     )
     public {
         tvm.accept();
+        for (Manager manager : initialManagers) {
+            _mintNft(manager.json, manager.owner, manager.manager);
+        }
     }
 
     function mintNft(

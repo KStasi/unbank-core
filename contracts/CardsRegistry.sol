@@ -7,25 +7,38 @@ import "./BaseCard.sol";
 // TODO: add static variables for all contracts where it's needed
 
 contract CardsRegistry {
-    uint128 public initialDeposit = 0.1 ever;
+    struct CardInfo {
+        uint128 id;
+        TvmCell code;
+    }
 
-    mapping(uint128 => TvmCell) public cardsCode;
+    uint128 public _initialDeposit = 0.1 ever;
 
-    constructor() public {
+    mapping(uint128 => TvmCell) public _cardsCode;
+
+    constructor(CardInfo[] initialCards) public {
         tvm.accept();
+        for ( CardInfo cardInfo : initialCards ) {
+            _cardsCode[cardInfo.id] = cardInfo.code;
+        }
+    }
+
+    function addCardCode(uint128 cardTypeId, TvmCell cardCode) public  {
+        tvm.accept();
+        _cardsCode[cardTypeId] = cardCode;
     }
 
     function deployCard(
-        uint128 _cardTypeId,
-        TvmCell _cardDetails)
+        uint128 cardTypeId,
+        TvmCell cardDetails)
         public responsible
         returns (address tokenWallet)
     {
         // TODO: ensure called from account
         tvm.accept();
-        TvmCell cardCode = cardsCode[_cardTypeId];
+        TvmCell cardCode = _cardsCode[cardTypeId];
         // TODO: update to make it work & make contract upgradable
-        address newCard = new BaseCard{value: initialDeposit, code: cardCode}(_cardDetails);
+        address newCard = new BaseCard{value: _initialDeposit, code: cardCode}(cardDetails);
 
         return { value: 0, flag: 64, bounce: false } newCard;
     }

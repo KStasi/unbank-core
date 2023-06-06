@@ -7,7 +7,6 @@ export default async () => {
   const proposal = locklift.factory.getContractArtifacts(proposalContractName);
   const managerCollection = await locklift.deployments.getContract("ManagerCollection");
 
-  // TODO: give initial roles
   await locklift.deployments.deploy({
     deployConfig: {
       contract: registryContractName,
