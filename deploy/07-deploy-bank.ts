@@ -1,27 +1,47 @@
 import { WalletTypes, toNano } from "locklift";
 
+export type cbdcDetails = [
+  Address,
+  {
+    CbdcInfo;
+  },
+];
 export default async () => {
   const signer = (await locklift.keystore.getSigner("0"))!;
   const bankContractName = "Bank";
   const shareTokenRoot = await locklift.deployments.getContract("ShareTokenRoot");
   const chiefManagerCollection = await locklift.deployments.getContract("ChiefManagerCollection");
-  const intialCbdcDetails = {
-    cbdcAddress1: {
-      isActive: true,
-      defaultDailyLimit: toNano(100),
-      defaultMonthlyLimit: toNano(1000),
-    },
-    cbdcAddress2: {
-      isActive: true,
-      defaultDailyLimit: toNano(100),
-      defaultMonthlyLimit: toNano(1000),
-    },
-    cbdcAddress3: {
-      isActive: true,
-      defaultDailyLimit: toNano(100),
-      defaultMonthlyLimit: toNano(1000),
-    },
-  };
+
+  const cbdc1 = await locklift.deployments.getContract("CBDC1");
+  const cbdc2 = await locklift.deployments.getContract("CBDC2");
+  const cbdc3 = await locklift.deployments.getContract("CBDC3");
+
+  const intialCbdcDetails = [
+    [
+      cbdc1.address,
+      {
+        isActive: true,
+        defaultDailyLimit: toNano(100),
+        defaultMonthlyLimit: toNano(1000),
+      },
+    ],
+    [
+      cbdc2.address,
+      {
+        isActive: true,
+        defaultDailyLimit: toNano(100),
+        defaultMonthlyLimit: toNano(1000),
+      },
+    ],
+    [
+      cbdc3.address,
+      {
+        isActive: true,
+        defaultDailyLimit: toNano(100),
+        defaultMonthlyLimit: toNano(1000),
+      },
+    ],
+  ];
 
   const randomNonce = new Date().getTime();
 
@@ -42,7 +62,6 @@ export default async () => {
     deploymentName: bankContractName,
     enableLogs: true,
   });
-  // TODO: add currencies
 };
 
 export const tag = "Bank";

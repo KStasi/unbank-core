@@ -1,11 +1,9 @@
-import { WalletTypes, toNano } from "locklift";
+import { toNano } from "locklift";
 
 export default async () => {
   const signer = (await locklift.keystore.getSigner("0"))!;
   const accountFactoryContractName = "RetailAccountFactory";
   const accountArtifacts = await locklift.factory.getContractArtifacts("RetailAccount");
-  const shareTokenRoot = await locklift.deployments.getContract("ShareTokenRoot");
-  const chiefManagerCollection = await locklift.deployments.getContract("ChiefManagerCollection");
   const cardsRegistry = await locklift.deployments.getContract("CardsRegistry");
   const bank = await locklift.deployments.getContract("Bank");
   const requestsRegistry = await locklift.deployments.getContract("RequestsRegistry");

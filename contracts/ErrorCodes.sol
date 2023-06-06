@@ -43,4 +43,5 @@ library ErrorCodes {
     uint16 constant SENDER_IS_NOT_PROPOSAL = 1143;
     uint16 constant NOT_CHIEF_MANAGER_COLLECTION = 1144;
     uint16 constant CBDC_NOT_SUPPORTED = 1145;
+    uint16 constant WRONG_OWNER = 1146;
 }

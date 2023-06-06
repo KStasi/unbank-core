@@ -72,7 +72,6 @@ const config: LockliftConfig = {
       keys: {
         // Use everdev to generate your phrase
         // !!! Never commit it in your repos !!!
-        // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
         amount: 20,
       },
     },
@@ -101,7 +100,7 @@ const config: LockliftConfig = {
         amount: 20,
       },
     },
-    venom_testnet: {
+    devnet: {
       connection: {
         id: 1000,
         type: "jrpc",
@@ -121,7 +120,7 @@ const config: LockliftConfig = {
       keys: {
         // Use everdev to generate your phrase
         // !!! Never commit it in your repos !!!
-        // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
+        phrase: "scrap frozen noble company include sail dynamic verify zebra barrel syrup picture",
         amount: 20,
       },
     },

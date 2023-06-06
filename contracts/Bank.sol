@@ -29,7 +29,6 @@ contract Bank is
     }
 
     constructor(address owner, address chiefManagerCollection, mapping(address => CbdcInfo) cbdcDetails) public {
-        require(initial);
         tvm.accept();
         _chiefManagerCollection = chiefManagerCollection;
         setOwnership(owner);

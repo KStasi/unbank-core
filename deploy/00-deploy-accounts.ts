@@ -26,13 +26,12 @@ export default async () => {
       accountSettings,
     })),
     ...Array.from({ length: 3 }, (_, i) => ({
-      deploymentName: `RetailUser${i + 1}`,
+      deploymentName: `RetailAccount${i + 1}`,
       signerId: `${i + 9}`,
       accountSettings,
     })),
   ];
-  console.log(accountsToDeploy);
-  // Deploy all accounts
+
   await locklift.deployments.deployAccounts(accountsToDeploy, true);
 };
 export const tag = "Accounts";

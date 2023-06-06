@@ -3,25 +3,30 @@ pragma ever-solidity >= 0.61.2;
 pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
-import "@broxus/contracts/contracts/access/ExternalOwner.tsol";
 import "@broxus/contracts/contracts/utils/RandomNonce.tsol";
-import "@broxus/contracts/contracts/utils/CheckPubKey.tsol";
 import "./ErrorCodes.sol";
 import "./CardsRegistry.sol";
 import "./BaseCard.sol";
 import "./CardWithLimits.sol";
 
-contract RetailAccount is
-    ExternalOwner,
-    RandomNonce,
-    CheckPubKey {
 
+contract RetailAccount is
+    RandomNonce
+    {
+    optional(uint) static public _ownerPublicKey;
+    optional(address) static public _ownerAddress;
     mapping(address => bool) public _cards;
     bool public _isActive;
     address public _cardsRegistry;
     address public _requestsRegistry;
     address public _managerCollection;
     address public _bank;
+
+    modifier onlyOwner() {
+        require(_ownerPublicKey.hasValue() && msg.pubkey() == _ownerPublicKey.get()||
+            _ownerAddress.hasValue() && _ownerAddress.get() == msg.sender, ErrorCodes.NOT_OWNER);
+        _;
+    }
 
     modifier onlyActive() {
         require(_isActive, ErrorCodes.NOT_ACTIVE_ACCOUNT);
@@ -48,15 +53,18 @@ contract RetailAccount is
         _;
     }
 
-    constructor(address cardsRegistry, address bank, address requestsRegistry, address managerCollection) public checkPubKey {
+    constructor(address cardsRegistry, address bank, address requestsRegistry, address managerCollection) public {
+        if (msg.pubkey() != 0) {
+            require(msg.pubkey() == tvm.pubkey() && !_ownerAddress.hasValue(), ErrorCodes.WRONG_OWNER);
+        } else {
+            require(_ownerAddress.hasValue(), ErrorCodes.WRONG_OWNER);
+        }
         tvm.accept();
 
         _cardsRegistry = cardsRegistry;
         _bank = bank;
         _requestsRegistry = requestsRegistry;
         _managerCollection = managerCollection;
-
-        setOwnership(msg.pubkey());
     }
 
     function addCard(
