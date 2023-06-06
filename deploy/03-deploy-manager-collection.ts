@@ -8,20 +8,28 @@ export default async () => {
   const indexArtifacts = await locklift.factory.getContractArtifacts("Index");
   const indexBasisArtifacts = await locklift.factory.getContractArtifacts("IndexBasis");
   const chiefManagerCollection = await locklift.deployments.getContract("ChiefManagerCollection");
+
+  const chiefManager1 = locklift.deployments.getAccount("ChiefManager1").account;
+  const chiefManager2 = locklift.deployments.getAccount("ChiefManager2").account;
+  const chiefManager3 = locklift.deployments.getAccount("ChiefManager3").account;
+  const manager1 = locklift.deployments.getAccount("Manager1").account;
+  const manager2 = locklift.deployments.getAccount("Manager2").account;
+  const manager3 = locklift.deployments.getAccount("Manager3").account;
+
   const initialManagers = [
     {
-      owner: new Address("0:0000000000000000000000000000000000000000000000000000000000000001"),
-      manager: new Address("0:0000000000000000000000000000000000000000000000000000000000000001"),
+      owner: manager1.address,
+      manager: chiefManager1.address,
       json: `{"role":"Chief Manager"}`,
     },
     {
-      owner: new Address("0:0000000000000000000000000000000000000000000000000000000000000002"),
-      manager: new Address("0:0000000000000000000000000000000000000000000000000000000000000002"),
+      owner: manager2.address,
+      manager: chiefManager2.address,
       json: `{"role":"Chief Manager"}`,
     },
     {
-      owner: new Address("0:0000000000000000000000000000000000000000000000000000000000000003"),
-      manager: new Address("0:0000000000000000000000000000000000000000000000000000000000000003"),
+      owner: manager3.address,
+      manager: chiefManager3.address,
       json: `{"role":"Chief Manager"}`,
     },
   ];

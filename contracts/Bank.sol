@@ -21,26 +21,28 @@ contract Bank is
     mapping(address => CbdcInfo) public _supportedCbdc;
     mapping(address => address) public _walletAddresses; // currency => wallet
     address public _chiefManagerCollection;
+    uint128 public _defaultDeployWalletValue = 0.1 ton;
 
     modifier onlyChiefManagerCollection() {
         require(msg.sender == _chiefManagerCollection, ErrorCodes.NOT_CHIEF_MANAGER_COLLECTION);
         _;
     }
 
-    constructor(address owner, address chiefManagerCollection) public {
+    constructor(address owner, address chiefManagerCollection, mapping(address => CbdcInfo) cbdcDetails) public {
+        require(initial);
         tvm.accept();
         _chiefManagerCollection = chiefManagerCollection;
         setOwnership(owner);
+
+        for ((address cbdcAddress, CbdcInfo cbdcInfo) : cbdcDetails) {
+           _updateSupportedCbdc(cbdcAddress, cbdcInfo);
+           _addWallet(cbdcAddress, _defaultDeployWalletValue);
+        }
     }
 
     function addWallet(address currencyRoot, uint128 deployWalletValue) public onlyOwner {
-        require(!_walletAddresses.exists(currencyRoot), ErrorCodes.WALLET_ALREADY_CREATED);
         tvm.accept();
-        ITokenRoot root = ITokenRoot(currencyRoot);
-        root.deployWallet{callback: onWalletCreated}(
-            address(this),
-            deployWalletValue
-        );
+        _addWallet(currencyRoot, deployWalletValue);
     }
 
     function onWalletCreated(
@@ -72,13 +74,7 @@ contract Bank is
         tvm.accept();
 
         for ((address cbdcAddress, CbdcInfo cbdcInfo) : cbdcDetails) {
-            if (_supportedCbdc.exists(cbdcAddress)) {
-                _supportedCbdc.replace(cbdcAddress, cbdcInfo);
-                // TODO: consider mechanics to remove support of CBDC. How to ensure,
-                // it still will be withdrawable or accessable?
-            } else {
-                _supportedCbdc.add(cbdcAddress, cbdcInfo);
-            }
+           _updateSupportedCbdc(cbdcAddress, cbdcInfo);
         }
     }
 
@@ -126,4 +122,22 @@ contract Bank is
         tvm.accept();
         dest.transfer(value, bounce, flags, payload);
     }
+
+    function _addWallet(address currencyRoot, uint128 deployWalletValue) internal {
+        require(!_walletAddresses.exists(currencyRoot), ErrorCodes.WALLET_ALREADY_CREATED);
+        ITokenRoot root = ITokenRoot(currencyRoot);
+        root.deployWallet{callback: onWalletCreated}(
+            address(this),
+            deployWalletValue
+        );
+    }
+
+    function _updateSupportedCbdc(address cbdcAddress, CbdcInfo cbdcInfo) internal {
+        if (_supportedCbdc.exists(cbdcAddress)) {
+            _supportedCbdc.replace(cbdcAddress, cbdcInfo);
+        } else {
+            _supportedCbdc.add(cbdcAddress, cbdcInfo);
+        }
+    }
+
 }

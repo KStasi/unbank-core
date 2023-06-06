@@ -5,6 +5,23 @@ export default async () => {
   const bankContractName = "Bank";
   const shareTokenRoot = await locklift.deployments.getContract("ShareTokenRoot");
   const chiefManagerCollection = await locklift.deployments.getContract("ChiefManagerCollection");
+  const intialCbdcDetails = {
+    cbdcAddress1: {
+      isActive: true,
+      defaultDailyLimit: toNano(100),
+      defaultMonthlyLimit: toNano(1000),
+    },
+    cbdcAddress2: {
+      isActive: true,
+      defaultDailyLimit: toNano(100),
+      defaultMonthlyLimit: toNano(1000),
+    },
+    cbdcAddress3: {
+      isActive: true,
+      defaultDailyLimit: toNano(100),
+      defaultMonthlyLimit: toNano(1000),
+    },
+  };
 
   const randomNonce = new Date().getTime();
 
@@ -18,6 +35,7 @@ export default async () => {
       constructorParams: {
         owner: shareTokenRoot.address,
         chiefManagerCollection: chiefManagerCollection.address,
+        cbdcDetails: intialCbdcDetails,
       },
       value: toNano(4),
     },

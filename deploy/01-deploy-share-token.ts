@@ -9,17 +9,22 @@ export default async () => {
   const name = "Share Token";
   const symbol = "veSHARE";
   const decimals = 18;
+
+  const founder1 = locklift.deployments.getAccount("Founder1").account;
+  const founder2 = locklift.deployments.getAccount("Founder2").account;
+  const founder3 = locklift.deployments.getAccount("Founder3").account;
+
   const initialShares = [
     {
-      owner: new Address("0:0000000000000000000000000000000000000000000000000000000000000001"),
+      owner: founder1.address,
       amount: toNano(toNano(1)),
     },
     {
-      owner: new Address("0:0000000000000000000000000000000000000000000000000000000000000002"),
+      owner: founder2.address,
       amount: toNano(toNano(1000)),
     },
     {
-      owner: new Address("0:0000000000000000000000000000000000000000000000000000000000000003"),
+      owner: founder3.address,
       amount: toNano(toNano(1000)),
     },
   ];
