@@ -6,6 +6,8 @@
     "compile": "npx locklift build",
     "deploy-local": "rm -rf ./deployments/local && locklift deploy --network local",
     "deploy-devnet": "rm -rf ./deployments/devnet && locklift deploy --network devnet",
+    "create-account-local": "npx locklift run -s ./scripts/create-account.ts -n local",
+    "create-account-devnet": "npx locklift run -s ./scripts/create-account.ts -n devnet",
     "start-node": "docker run -d --name local-node -e USER_AGREEMENT=yes -p80:80 tonlabs/local-node",
     "test": "npx locklift test --network local"
   },

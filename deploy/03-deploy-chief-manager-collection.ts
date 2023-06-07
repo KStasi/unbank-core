@@ -1,4 +1,4 @@
-import { WalletTypes, toNano, Address } from "locklift";
+import { WalletTypes, toNano, Address, getRandomNonce } from "locklift";
 
 export default async () => {
   const signer = (await locklift.keystore.getSigner("0"))!;
@@ -32,7 +32,9 @@ export default async () => {
       deployConfig: {
         contract: collectionContractName,
         publicKey: signer.publicKey,
-        initParams: {},
+        initParams: {
+          _randomNonce: getRandomNonce(),
+        },
         constructorParams: {
           codeNft: nftArtifacts.code,
           codeIndex: indexArtifacts.code,

@@ -34,28 +34,30 @@ export default async () => {
 
   const TokenWallet = locklift.factory.getContractArtifacts(walletContract);
 
-  await locklift.deployments.deploy({
-    deployConfig: {
-      contract: rootContract,
-      publicKey: signer.publicKey,
-      initParams: {
-        deployer_: zeroAddress,
-        randomNonce_: getRandomNonce(),
-        rootOwner_: rootOwner,
-        name_: name,
-        symbol_: symbol,
-        decimals_: decimals,
-        walletCode_: TokenWallet.code,
+  const tracing = await locklift.tracing.trace(
+    locklift.deployments.deploy({
+      deployConfig: {
+        contract: rootContract,
+        publicKey: signer.publicKey,
+        initParams: {
+          deployer_: zeroAddress,
+          randomNonce_: getRandomNonce(),
+          rootOwner_: rootOwner,
+          name_: name,
+          symbol_: symbol,
+          decimals_: decimals,
+          walletCode_: TokenWallet.code,
+        },
+        constructorParams: {
+          defaultQuorumRate: defaultQuorumRate,
+          lifetime: lifetime,
+          initialShares: initialShares,
+        },
+        value: toNano(3),
       },
-      constructorParams: {
-        defaultQuorumRate: defaultQuorumRate,
-        lifetime: lifetime,
-        initialShares: initialShares,
-      },
-      value: toNano(3),
-    },
-    deploymentName: rootContract,
-    enableLogs: true,
-  });
+      deploymentName: rootContract,
+      enableLogs: true,
+    }),
+  );
 };
 export const tag = "ShareTokenRoot";

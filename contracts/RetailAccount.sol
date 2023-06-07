@@ -3,16 +3,13 @@ pragma ever-solidity >= 0.61.2;
 pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
-import "@broxus/contracts/contracts/utils/RandomNonce.tsol";
 import "./ErrorCodes.sol";
 import "./CardsRegistry.sol";
 import "./BaseCard.sol";
 import "./CardWithLimits.sol";
 
 
-contract RetailAccount is
-    RandomNonce
-    {
+contract RetailAccount {
     optional(uint) static public _ownerPublicKey;
     optional(address) static public _ownerAddress;
     mapping(address => bool) public _cards;

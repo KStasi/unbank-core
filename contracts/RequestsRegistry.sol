@@ -4,8 +4,9 @@ pragma AbiHeader expire;
 
 import "./ErrorCodes.sol";
 import "./Proposal.sol";
+import "@broxus/contracts/contracts/utils/RandomNonce.tsol";
 
-contract RequestsRegistry {
+contract RequestsRegistry is RandomNonce {
     address public _managerCollection;
     TvmCell public _proposalCode;
     uint64 public _proposalsCount = 0;

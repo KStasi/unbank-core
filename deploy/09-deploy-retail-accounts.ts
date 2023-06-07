@@ -27,7 +27,7 @@ export default async () => {
     // { cardTypeId: 1, currency: cbdcs[0], otherCardDetails: "targetAmount" },
   ];
 
-  BigNumber.config({ EXPONENTIAL_AT: 80 });
+  BigNumber.config({ EXPONENTIAL_AT: 120 });
 
   for (let i = 0; i < managers.length; i++) {
     const manager = managers[i];
@@ -74,7 +74,6 @@ export default async () => {
         }),
     );
 
-    // console.log(tracing);
     const { retailAccount: retailAccountAddress } = await accountFactory.methods
       .retailAccountAddress({ pubkey: null, owner: retailAccount.address, answerId: i })
       .call();
@@ -93,7 +92,7 @@ export default async () => {
       const managerCollectionCallData = await managerCollection.methods
         .callAsAnyManager({
           owner: manager.address,
-          dest: accountFactory.address,
+          dest: retailAccountInstance.address,
           value: toNano(1),
           bounce: false,
           flags: 0,
@@ -114,7 +113,7 @@ export default async () => {
             amount: toNano(2),
           }),
       );
-      console.log(tracing);
+      // console.log(tracing);
     }
   }
 };

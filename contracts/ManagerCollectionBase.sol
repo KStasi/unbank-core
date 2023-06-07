@@ -3,13 +3,14 @@ pragma ever-solidity >= 0.61.2;
 pragma AbiHeader expire;
 pragma AbiHeader time;
 
+import "@broxus/contracts/contracts/utils/RandomNonce.tsol";
 import '@itgold/everscale-tip/contracts/TIP4_2/TIP4_2Collection.sol';
 import '@itgold/everscale-tip/contracts/TIP4_3/TIP4_3Collection.sol';
 import 'tip3/contracts/libraries/TokenMsgFlag.sol';
 import './ManagerNftBase.sol';
 import './ErrorCodes.sol';
 
-contract ManagerCollectionBase is TIP4_2Collection, TIP4_3Collection {
+contract ManagerCollectionBase is TIP4_2Collection, TIP4_3Collection, RandomNonce {
 
     uint128 _remainOnNft = 1 ton;
     uint128 _deployValue = 1.5 ton;

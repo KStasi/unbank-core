@@ -3,8 +3,6 @@ pragma ever-solidity >= 0.61.2;
 pragma AbiHeader expire;
 // pragma AbiHeader pubkey;
 
-// import "@broxus/contracts/contracts/access/InternalOwner.tsol";
-// import "@broxus/contracts/contracts/utils/RandomNonce.tsol";
 import "tip3/contracts/interfaces/IBurnableByRootTokenWallet.sol";
 import "tip3/contracts/interfaces/IAcceptTokensTransferCallback.sol";
 import "tip3/contracts/interfaces/IAcceptTokensBurnCallback.sol";

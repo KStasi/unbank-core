@@ -1,12 +1,12 @@
 pragma ever-solidity >= 0.61.2;
 
 import "./BaseCard.sol";
-// import "./utils/RandomNonce.sol";
+import "@broxus/contracts/contracts/utils/RandomNonce.tsol";
 
 // TODO: add random nonce where it's needed
 // TODO: add static variables for all contracts where it's needed
 
-contract CardsRegistry {
+contract CardsRegistry is RandomNonce {
     struct CardInfo {
         uint128 id;
         TvmCell code;

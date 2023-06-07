@@ -2,7 +2,6 @@ pragma ever-solidity >= 0.61.2;
 
 pragma AbiHeader expire;
 
-import "@broxus/contracts/contracts/access/ExternalOwner.tsol";
 import "@broxus/contracts/contracts/utils/RandomNonce.tsol";
 import "./ErrorCodes.sol";
 import "./CardsRegistry.sol";
@@ -10,7 +9,7 @@ import "./BaseCard.sol";
 import "./RetailAccount.sol";
 
 // TODO: add index for all accounts
-contract RetailAccountFactory {
+contract RetailAccountFactory is RandomNonce {
 
     TvmCell public _accountCode;
     address public _cardsRegistry;
