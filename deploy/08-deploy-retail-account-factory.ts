@@ -8,28 +8,29 @@ export default async () => {
   const bank = await locklift.deployments.getContract("Bank");
   const requestsRegistry = await locklift.deployments.getContract("RequestsRegistry");
   const managerCollection = await locklift.deployments.getContract("ManagerCollection");
-  const initialAmount = 0;
+  const initialAmount = toNano(1);
 
-  await locklift.deployments.deploy({
-    deployConfig: {
-      contract: accountFactoryContractName,
-      publicKey: signer.publicKey,
-      initParams: {},
-      constructorParams: {
-        code: accountArtifacts.code,
-        cardsRegistry: cardsRegistry.address,
-        bank: bank.address,
-        requestsRegistry: requestsRegistry.address,
-        managerCollection: managerCollection.address,
-        initialAmount: initialAmount,
+  const tracing = await locklift.tracing.trace(
+    locklift.deployments.deploy({
+      deployConfig: {
+        contract: accountFactoryContractName,
+        publicKey: signer.publicKey,
+        initParams: {},
+        constructorParams: {
+          code: accountArtifacts.code,
+          cardsRegistry: cardsRegistry.address,
+          bank: bank.address,
+          requestsRegistry: requestsRegistry.address,
+          managerCollection: managerCollection.address,
+          initialAmount: initialAmount,
+        },
+        value: toNano(1),
       },
-      value: toNano(4),
-    },
-    deploymentName: accountFactoryContractName,
-    enableLogs: true,
-  });
-
-  // TODO: deploy an account and add cards
+      deploymentName: accountFactoryContractName,
+      enableLogs: true,
+    }),
+  );
+  // console.log(tracing);
 };
 
-export const tag = "Bank";
+export const tag = "RetailAccountFactory";

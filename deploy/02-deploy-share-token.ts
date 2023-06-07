@@ -11,22 +11,22 @@ export default async () => {
   const decimals = 18;
 
   const founder1 = locklift.deployments.getAccount("Founder1").account;
-  const founder2 = locklift.deployments.getAccount("Founder2").account;
-  const founder3 = locklift.deployments.getAccount("Founder3").account;
+  // const founder2 = locklift.deployments.getAccount("Founder2").account;
+  // const founder3 = locklift.deployments.getAccount("Founder3").account;
 
   const initialShares = [
     {
       owner: founder1.address,
       amount: toNano(toNano(1)),
     },
-    {
-      owner: founder2.address,
-      amount: toNano(toNano(1000)),
-    },
-    {
-      owner: founder3.address,
-      amount: toNano(toNano(1000)),
-    },
+    // {
+    //   owner: founder2.address,
+    //   amount: toNano(toNano(1000)),
+    // },
+    // {
+    //   owner: founder3.address,
+    //   amount: toNano(toNano(1000)),
+    // },
   ];
 
   const defaultQuorumRate = 5100; // e.g., 51%
@@ -52,7 +52,7 @@ export default async () => {
         lifetime: lifetime,
         initialShares: initialShares,
       },
-      value: toNano(5),
+      value: toNano(3),
     },
     deploymentName: rootContract,
     enableLogs: true,

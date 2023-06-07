@@ -10,11 +10,11 @@ export default async () => {
   const chiefManagerCollection = await locklift.deployments.getContract("ChiefManagerCollection");
 
   const chiefManager1 = locklift.deployments.getAccount("ChiefManager1").account;
-  const chiefManager2 = locklift.deployments.getAccount("ChiefManager2").account;
-  const chiefManager3 = locklift.deployments.getAccount("ChiefManager3").account;
+  // const chiefManager2 = locklift.deployments.getAccount("ChiefManager2").account;
+  // const chiefManager3 = locklift.deployments.getAccount("ChiefManager3").account;
   const manager1 = locklift.deployments.getAccount("Manager1").account;
-  const manager2 = locklift.deployments.getAccount("Manager2").account;
-  const manager3 = locklift.deployments.getAccount("Manager3").account;
+  // const manager2 = locklift.deployments.getAccount("Manager2").account;
+  // const manager3 = locklift.deployments.getAccount("Manager3").account;
 
   const initialManagers = [
     {
@@ -22,36 +22,38 @@ export default async () => {
       manager: chiefManager1.address,
       json: `{"role":"Chief Manager"}`,
     },
-    {
-      owner: manager2.address,
-      manager: chiefManager2.address,
-      json: `{"role":"Chief Manager"}`,
-    },
-    {
-      owner: manager3.address,
-      manager: chiefManager3.address,
-      json: `{"role":"Chief Manager"}`,
-    },
+    // {
+    //   owner: manager2.address,
+    //   manager: chiefManager2.address,
+    //   json: `{"role":"Chief Manager"}`,
+    // },
+    // {
+    //   owner: manager3.address,
+    //   manager: chiefManager3.address,
+    //   json: `{"role":"Chief Manager"}`,
+    // },
   ];
-
-  await locklift.deployments.deploy({
-    deployConfig: {
-      contract: collectionContractName,
-      publicKey: signer.publicKey,
-      initParams: {},
-      constructorParams: {
-        codeNft: nftArtifacts.code,
-        codeIndex: indexArtifacts.code,
-        codeIndexBasis: indexBasisArtifacts.code,
-        json: metadata,
-        admin: chiefManagerCollection.address,
-        initialManagers,
+  const tracing = await locklift.tracing.trace(
+    locklift.deployments.deploy({
+      deployConfig: {
+        contract: collectionContractName,
+        publicKey: signer.publicKey,
+        initParams: {},
+        constructorParams: {
+          codeNft: nftArtifacts.code,
+          codeIndex: indexArtifacts.code,
+          codeIndexBasis: indexBasisArtifacts.code,
+          json: metadata,
+          admin: chiefManagerCollection.address,
+          initialManagers,
+        },
+        value: toNano(4),
       },
-      value: toNano(5),
-    },
-    deploymentName: collectionContractName,
-    enableLogs: true,
-  });
+      deploymentName: collectionContractName,
+      enableLogs: true,
+    }),
+  );
+  // console.log(tracing);
 };
 
 export const tag = "ManagerCollection";

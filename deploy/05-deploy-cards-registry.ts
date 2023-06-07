@@ -18,18 +18,20 @@ export default async () => {
       code: savingCard.code,
     },
   ];
-
-  await locklift.deployments.deploy({
-    deployConfig: {
-      contract: registryContractName,
-      publicKey: signer.publicKey,
-      initParams: {},
-      constructorParams: { initialCards },
-      value: toNano(1),
-    },
-    deploymentName: registryContractName,
-    enableLogs: true,
-  });
+  const tracing = await locklift.tracing.trace(
+    locklift.deployments.deploy({
+      deployConfig: {
+        contract: registryContractName,
+        publicKey: signer.publicKey,
+        initParams: {},
+        constructorParams: { initialCards },
+        value: toNano(0.3),
+      },
+      deploymentName: registryContractName,
+      enableLogs: true,
+    }),
+  );
+  // console.log(tracing);
 };
 
 export const tag = "CardsRegistry";

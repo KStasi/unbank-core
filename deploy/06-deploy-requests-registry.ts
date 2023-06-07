@@ -7,20 +7,23 @@ export default async () => {
   const proposal = locklift.factory.getContractArtifacts(proposalContractName);
   const managerCollection = await locklift.deployments.getContract("ManagerCollection");
 
-  await locklift.deployments.deploy({
-    deployConfig: {
-      contract: registryContractName,
-      publicKey: signer.publicKey,
-      initParams: {},
-      constructorParams: {
-        managerCollection: managerCollection.address,
-        proposalCode: proposal.code,
+  const tracing = await locklift.tracing.trace(
+    locklift.deployments.deploy({
+      deployConfig: {
+        contract: registryContractName,
+        publicKey: signer.publicKey,
+        initParams: {},
+        constructorParams: {
+          managerCollection: managerCollection.address,
+          proposalCode: proposal.code,
+        },
+        value: toNano(0.3),
       },
-      value: toNano(4),
-    },
-    deploymentName: registryContractName,
-    enableLogs: true,
-  });
+      deploymentName: registryContractName,
+      enableLogs: true,
+    }),
+  );
+  // console.log(tracing);
 };
 
 export const tag = "RequestsRegistry";

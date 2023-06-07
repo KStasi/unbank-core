@@ -7,19 +7,19 @@ export default async () => {
 
   const managers = [
     locklift.deployments.getAccount("Manager1").account,
-    locklift.deployments.getAccount("Manager2").account,
-    locklift.deployments.getAccount("Manager3").account,
+    // locklift.deployments.getAccount("Manager2").account,
+    // locklift.deployments.getAccount("Manager3").account,
   ];
 
   const retailAccounts = [
     locklift.deployments.getAccount("RetailAccount1").account,
-    locklift.deployments.getAccount("RetailAccount2").account,
-    locklift.deployments.getAccount("RetailAccount3").account,
+    // locklift.deployments.getAccount("RetailAccount2").account,
+    // locklift.deployments.getAccount("RetailAccount3").account,
   ];
   const cbdcs = [
     locklift.deployments.getContract("CBDC1"),
-    locklift.deployments.getContract("CBDC2"),
-    locklift.deployments.getContract("CBDC3"),
+    // locklift.deployments.getContract("CBDC2"),
+    // locklift.deployments.getContract("CBDC3"),
   ];
 
   const cards = [
@@ -44,7 +44,7 @@ export default async () => {
       .callAsAnyManager({
         owner: manager.address,
         dest: accountFactory.address,
-        value: toNano(0.1),
+        value: toNano(1),
         bounce: false,
         flags: 0,
         payload: accountFactoryCallData,
@@ -59,28 +59,25 @@ export default async () => {
 
     const managerNFTInstance = await locklift.factory.getDeployedContract("ManagerNftBase", nftAddress);
 
-    const callResult = await managerNFTInstance.methods
-      .sendTransaction({
-        dest: managerCollection.address,
-        value: toNano(0.1),
-        bounce: false,
-        flags: 0,
-        payload: managerCollectionCallData,
-      })
-      .send({
-        from: manager.address,
-        amount: toNano(0.1),
-      });
+    const tracing = await locklift.tracing.trace(
+      managerNFTInstance.methods
+        .sendTransaction({
+          dest: managerCollection.address,
+          value: toNano(2),
+          bounce: false,
+          flags: 0,
+          payload: managerCollectionCallData,
+        })
+        .send({
+          from: manager.address,
+          amount: toNano(3),
+        }),
+    );
 
-    console.log("Aborted: " + callResult.aborted);
-    console.log("Exit code: " + callResult.exitCode);
-    console.log("Result Code: " + callResult.resultCode);
-
+    // console.log(tracing);
     const { retailAccount: retailAccountAddress } = await accountFactory.methods
       .retailAccountAddress({ pubkey: null, owner: retailAccount.address, answerId: i })
       .call();
-
-    console.log(retailAccount);
 
     const retailAccountInstance = await locklift.factory.getDeployedContract("RetailAccount", retailAccountAddress);
 
@@ -97,29 +94,27 @@ export default async () => {
         .callAsAnyManager({
           owner: manager.address,
           dest: accountFactory.address,
-          value: toNano(0.1),
+          value: toNano(1),
           bounce: false,
           flags: 0,
           payload: addCardCallData,
         })
         .encodeInternal();
-
-      const callResult = await managerNFTInstance.methods
-        .sendTransaction({
-          dest: managerCollection.address,
-          value: toNano(0.1),
-          bounce: false,
-          flags: 0,
-          payload: managerCollectionCallData,
-        })
-        .send({
-          from: manager.address,
-          amount: toNano(0.1),
-        });
-
-      console.log("Aborted: " + callResult.aborted);
-      console.log("Exit code: " + callResult.exitCode);
-      console.log("Result Code: " + callResult.resultCode);
+      const tracing = await locklift.tracing.trace(
+        managerNFTInstance.methods
+          .sendTransaction({
+            dest: managerCollection.address,
+            value: toNano(1.5),
+            bounce: false,
+            flags: 0,
+            payload: managerCollectionCallData,
+          })
+          .send({
+            from: manager.address,
+            amount: toNano(2),
+          }),
+      );
+      console.log(tracing);
     }
   }
 };

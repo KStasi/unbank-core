@@ -13,8 +13,8 @@ export default async () => {
   const chiefManagerCollection = await locklift.deployments.getContract("ChiefManagerCollection");
 
   const cbdc1 = await locklift.deployments.getContract("CBDC1");
-  const cbdc2 = await locklift.deployments.getContract("CBDC2");
-  const cbdc3 = await locklift.deployments.getContract("CBDC3");
+  // const cbdc2 = await locklift.deployments.getContract("CBDC2");
+  // const cbdc3 = await locklift.deployments.getContract("CBDC3");
 
   const intialCbdcDetails = [
     [
@@ -25,43 +25,46 @@ export default async () => {
         defaultMonthlyLimit: toNano(1000),
       },
     ],
-    [
-      cbdc2.address,
-      {
-        isActive: true,
-        defaultDailyLimit: toNano(100),
-        defaultMonthlyLimit: toNano(1000),
-      },
-    ],
-    [
-      cbdc3.address,
-      {
-        isActive: true,
-        defaultDailyLimit: toNano(100),
-        defaultMonthlyLimit: toNano(1000),
-      },
-    ],
+    // [
+    //   cbdc2.address,
+    //   {
+    //     isActive: true,
+    //     defaultDailyLimit: toNano(100),
+    //     defaultMonthlyLimit: toNano(1000),
+    //   },
+    // ],
+    // [
+    //   cbdc3.address,
+    //   {
+    //     isActive: true,
+    //     defaultDailyLimit: toNano(100),
+    //     defaultMonthlyLimit: toNano(1000),
+    //   },
+    // ],
   ];
 
   const randomNonce = new Date().getTime();
 
-  await locklift.deployments.deploy({
-    deployConfig: {
-      contract: bankContractName,
-      publicKey: signer.publicKey,
-      initParams: {
-        _randomNonce: randomNonce,
+  const tracing = await locklift.tracing.trace(
+    locklift.deployments.deploy({
+      deployConfig: {
+        contract: bankContractName,
+        publicKey: signer.publicKey,
+        initParams: {
+          _randomNonce: randomNonce,
+        },
+        constructorParams: {
+          owner: shareTokenRoot.address,
+          chiefManagerCollection: chiefManagerCollection.address,
+          cbdcDetails: intialCbdcDetails,
+        },
+        value: toNano(3),
       },
-      constructorParams: {
-        owner: shareTokenRoot.address,
-        chiefManagerCollection: chiefManagerCollection.address,
-        cbdcDetails: intialCbdcDetails,
-      },
-      value: toNano(4),
-    },
-    deploymentName: bankContractName,
-    enableLogs: true,
-  });
+      deploymentName: bankContractName,
+      enableLogs: true,
+    }),
+  );
+  // console.log(tracing);
 };
 
 export const tag = "Bank";

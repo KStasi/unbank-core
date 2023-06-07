@@ -2,7 +2,6 @@ pragma ever-solidity >= 0.61.2;
 
 pragma AbiHeader expire;
 pragma AbiHeader time;
-pragma AbiHeader pubkey;
 
 import './ManagerCollectionBase.sol';
 import './ManagerNftBase.sol';

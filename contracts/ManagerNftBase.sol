@@ -58,7 +58,8 @@ contract ManagerNftBase is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft {
         onlyOwner
     {
         tvm.accept();
-        ManagerCollectionBase(_collection).callAsAnyManager(_owner, dest, value, bounce, flags, payload);
+        dest.transfer(value, bounce, flags, payload);
+        // ManagerCollectionBase(_collection).callAsAnyManager(_owner, dest, value, bounce, flags, payload);
     }
 
     function _beforeTransfer(

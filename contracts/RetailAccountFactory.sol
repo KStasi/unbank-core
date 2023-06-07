@@ -1,11 +1,9 @@
 pragma ever-solidity >= 0.61.2;
 
 pragma AbiHeader expire;
-pragma AbiHeader pubkey;
 
 import "@broxus/contracts/contracts/access/ExternalOwner.tsol";
 import "@broxus/contracts/contracts/utils/RandomNonce.tsol";
-import "@broxus/contracts/contracts/utils/CheckPubKey.tsol";
 import "./ErrorCodes.sol";
 import "./CardsRegistry.sol";
 import "./BaseCard.sol";
@@ -48,7 +46,10 @@ contract RetailAccountFactory {
         _requestsRegistry = requestsRegistry;
     }
 
-    function deployRetailAccount(optional(uint128) pubkey, optional(address) owner) public onlyManagerCollection returns (address) {
+    function deployRetailAccount(
+        optional(uint128) pubkey,
+        optional(address) owner
+    ) public onlyManagerCollection returns (address) {
         tvm.accept();
 
         TvmCell code = _buildCode(address(this));

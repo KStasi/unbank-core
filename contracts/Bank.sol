@@ -21,7 +21,8 @@ contract Bank is
     mapping(address => CbdcInfo) public _supportedCbdc;
     mapping(address => address) public _walletAddresses; // currency => wallet
     address public _chiefManagerCollection;
-    uint128 public _defaultDeployWalletValue = 0.1 ton;
+    uint128 public _defaultDeployWalletValue = 1 ton;
+    uint128 public _defaultDeployWalletExecutionValue = 0.5 ton;
 
     modifier onlyChiefManagerCollection() {
         require(msg.sender == _chiefManagerCollection, ErrorCodes.NOT_CHIEF_MANAGER_COLLECTION);
@@ -125,7 +126,7 @@ contract Bank is
     function _addWallet(address currencyRoot, uint128 deployWalletValue) internal {
         require(!_walletAddresses.exists(currencyRoot), ErrorCodes.WALLET_ALREADY_CREATED);
         ITokenRoot root = ITokenRoot(currencyRoot);
-        root.deployWallet{callback: onWalletCreated}(
+        root.deployWallet{callback: onWalletCreated, value: deployWalletValue+_defaultDeployWalletExecutionValue}(
             address(this),
             deployWalletValue
         );

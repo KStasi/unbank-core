@@ -5,27 +5,30 @@ export default async () => {
   // Prepare accounts settings
   const accountSettings = {
     type: WalletTypes.EverWallet,
-    value: locklift.utils.toNano(2),
+    value: locklift.utils.toNano(0.3),
   };
 
   // Build accounts to deploy
   const accountsToDeploy = [
-    ...Array.from({ length: 3 }, (_, i) => ({
+    ...Array.from({ length: 1 }, (_, i) => ({
       deploymentName: `Founder${i + 1}`,
       signerId: `${i}`,
       accountSettings,
     })),
-    ...Array.from({ length: 3 }, (_, i) => ({
+    ...Array.from({ length: 1 }, (_, i) => ({
       deploymentName: `ChiefManager${i + 1}`,
       signerId: `${i + 3}`,
       accountSettings,
     })),
-    ...Array.from({ length: 3 }, (_, i) => ({
+    ...Array.from({ length: 1 }, (_, i) => ({
       deploymentName: `Manager${i + 1}`,
       signerId: `${i + 6}`,
-      accountSettings,
+      accountSettings: {
+        type: WalletTypes.EverWallet,
+        value: locklift.utils.toNano(5),
+      },
     })),
-    ...Array.from({ length: 3 }, (_, i) => ({
+    ...Array.from({ length: 1 }, (_, i) => ({
       deploymentName: `RetailAccount${i + 1}`,
       signerId: `${i + 9}`,
       accountSettings,

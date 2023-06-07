@@ -2,7 +2,6 @@ pragma ever-solidity >= 0.61.2;
 
 pragma AbiHeader expire;
 pragma AbiHeader time;
-pragma AbiHeader pubkey;
 
 import '@itgold/everscale-tip/contracts/TIP4_2/TIP4_2Collection.sol';
 import '@itgold/everscale-tip/contracts/TIP4_3/TIP4_3Collection.sol';
@@ -12,7 +11,8 @@ import './ErrorCodes.sol';
 
 contract ManagerCollectionBase is TIP4_2Collection, TIP4_3Collection {
 
-    uint128 _remainOnNft = 0.3 ton;
+    uint128 _remainOnNft = 1 ton;
+    uint128 _deployValue = 1.5 ton;
     address _admin;
 
     modifier onlyAdmin() {
@@ -62,17 +62,17 @@ contract ManagerCollectionBase is TIP4_2Collection, TIP4_3Collection {
 
         address nftAddr = new ManagerNftBase{
             stateInit: stateNft,
-            value: 0,
+            value: _deployValue,
             flag: TokenMsgFlag.SENDER_PAYS_FEES
         }(
             owner,
-            manager,
+            address(this),
             _remainOnNft,
             json,
             _codeIndex,
             _indexDeployValue,
             _indexDestroyValue,
-            msg.sender
+            manager
         );
 
         emit NftCreated(
@@ -98,9 +98,11 @@ contract ManagerCollectionBase is TIP4_2Collection, TIP4_3Collection {
         uint8 flags,
         TvmCell payload
     ) public view {
-        (int8 _wid, uint addr) = owner.unpack();
-        require(msg.sender == _resolveNft(addr));
         tvm.accept();
+        // TODO: do before accept
+        (int8 _wid, uint addr) = owner.unpack();
+        bool eqa = msg.sender == _resolveNft(addr);
+        require(eqa, ErrorCodes.NOT_NFT);
 
         dest.transfer(value, bounce, flags, payload);
     }

@@ -10,26 +10,25 @@ export default async () => {
   const shareTokenRoot = await locklift.deployments.getContract("ShareTokenRoot");
 
   const chiefManager1 = locklift.deployments.getAccount("ChiefManager1").account;
-  const chiefManager2 = locklift.deployments.getAccount("ChiefManager2").account;
-  const chiefManager3 = locklift.deployments.getAccount("ChiefManager3").account;
+  // const chiefManager2 = locklift.deployments.getAccount("ChiefManager2").account;
+  // const chiefManager3 = locklift.deployments.getAccount("ChiefManager3").account;
 
   const initialChiefManagers = [
     {
       owner: chiefManager1.address,
       json: `{"role":"Chief Manager"}`,
     },
-    {
-      owner: chiefManager2.address,
-      json: `{"role":"Chief Manager"}`,
-    },
-    {
-      owner: chiefManager3.address,
-      json: `{"role":"Chief Manager"}`,
-    },
+    // {
+    //   owner: chiefManager2.address,
+    //   json: `{"role":"Chief Manager"}`,
+    // },
+    // {
+    //   owner: chiefManager3.address,
+    //   json: `{"role":"Chief Manager"}`,
+    // },
   ];
-
-  await locklift.deployments
-    .deploy({
+  const tracing = await locklift.tracing.trace(
+    locklift.deployments.deploy({
       deployConfig: {
         contract: collectionContractName,
         publicKey: signer.publicKey,
@@ -42,12 +41,13 @@ export default async () => {
           admin: shareTokenRoot.address,
           initialChiefManagers,
         },
-        value: toNano(5),
+        value: toNano(3),
       },
       deploymentName: collectionContractName,
       enableLogs: true,
-    })
-    .catch(console.log);
+    }),
+  );
+  // console.log(tracing);
 };
 
 export const tag = "ChiefManagerCollection";
