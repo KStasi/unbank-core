@@ -10,11 +10,11 @@ export default async () => {
 
   const initialCards = [
     {
-      id: 1,
+      id: 0,
       code: debitCard.code,
     },
     {
-      id: 2,
+      id: 1,
       code: savingCard.code,
     },
   ];

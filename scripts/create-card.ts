@@ -5,7 +5,7 @@ const USER_ADDRESS = new Address("0:5368ceef99d6ce85728bc9924d8ceed46b30441d3f9e
 const MANAGER_COLLECTION_ADDRESS = new Address("0:e6d197baf1fa3a89a3f7aea2b8dcab2bf149bbd6481936743b6dd3b67f1d7474");
 const ACCOUNT_FACTORY_ADDRESS = new Address("0:8b7ed9bab4f407c27dbd5e4a9796806eab09cdf14a5f9e95f883da0200c1aaae");
 const MANAGER_ADDRESS = new Address("0:cc0b13c55a8901fd1ed9332be3f6d925cfd309f1997ef3724467680c39342822");
-const CARD_TYPE_ID = 1;
+const CARD_TYPE_ID = 0;
 const CURRENCY = new Address("0:d90b39c03a238b392ca660d42eadf3d05d7ac4cb963dd0906380f1f9d16394f6");
 const OTHER_CARD_DETAILS = "";
 

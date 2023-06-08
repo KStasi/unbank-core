@@ -3,36 +3,35 @@ import BigNumber from "bignumber.js";
 
 export default async () => {
   const signer = await locklift.keystore.getSigner("0");
-
   const founder1 = locklift.deployments.getAccount("Founder1").account;
   // const founder2 = locklift.deployments.getAccount("Founder2").account;
   // const founder3 = locklift.deployments.getAccount("Founder3").account;
 
   const tokensData = [
     {
-      name: "CBDC Token 1",
-      symbol: "CBDC1",
+      name: "Venom USD",
+      symbol: "veUSD",
       initialSupply: 0,
-      decimals: 18,
+      decimals: 9,
       deploymentName: "CBDC1",
       rootOwner: founder1.address,
     },
-    // {
-    //   name: "CBDC Token 2",
-    //   symbol: "CBDC2",
-    //   initialSupply: 0,
-    //   decimals: 18,
-    //   deploymentName: "CBDC2",
-    //   rootOwner: founder2.address,
-    // },
-    // {
-    //   name: "CBDC Token 3",
-    //   symbol: "CBDC3",
-    //   initialSupply: 0,
-    //   decimals: 18,
-    //   deploymentName: "CBDC3",
-    //   rootOwner: founder3.address,
-    // },
+    {
+      name: "Venom Euro",
+      symbol: "veEUR",
+      initialSupply: 0,
+      decimals: 9,
+      deploymentName: "CBDC2",
+      rootOwner: founder1.address,
+    },
+    {
+      name: "Venom Dirham",
+      symbol: "veAED",
+      initialSupply: 0,
+      decimals: 18,
+      deploymentName: "CBDC3",
+      rootOwner: founder1.address,
+    },
   ];
 
   for (let tokenData of tokensData) {
