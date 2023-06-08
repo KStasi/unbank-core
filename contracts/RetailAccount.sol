@@ -65,7 +65,8 @@ contract RetailAccount {
     }
 
     function addCard(
-        uint128 cardTypeId,
+        uint8 cardTypeId,
+        BaseCard.CardType cardType,
         address currency,
         TvmCell otherCardDetails
     )
@@ -75,13 +76,13 @@ contract RetailAccount {
     {
         tvm.accept();
 
-        // dev: owner + bank address + currency + other card details
-        TvmBuilder builder;
-        builder.store(address(this), _bank, currency, otherCardDetails);
-
         CardsRegistry(_cardsRegistry).deployCard{value: 0, bounce: false, flag: 64, callback: RetailAccount.onCardAdded}(
+            currency,
+            address(this),
+            _bank,
             cardTypeId,
-            builder.toCell()
+            cardType,
+            otherCardDetails
         );
     }
 

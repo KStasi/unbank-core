@@ -23,7 +23,7 @@ export default async () => {
   ];
 
   const cards = [
-    { cardTypeId: 0, currency: cbdcs[0].address, otherCardDetails: "" },
+    { cardTypeId: 0, currency: cbdcs[0].address, cardType: 0, otherCardDetails: "" },
     // { cardTypeId: 1, currency: cbdcs[0], otherCardDetails: "targetAmount" },
   ];
 
@@ -85,6 +85,7 @@ export default async () => {
         .addCard({
           cardTypeId: card.cardTypeId,
           currency: card.currency,
+          cardType: card.cardType,
           otherCardDetails: card.otherCardDetails,
         })
         .encodeInternal();
@@ -93,7 +94,7 @@ export default async () => {
         .callAsAnyManager({
           owner: manager.address,
           dest: retailAccountInstance.address,
-          value: toNano(1),
+          value: toNano(2),
           bounce: false,
           flags: 0,
           payload: addCardCallData,
@@ -103,14 +104,14 @@ export default async () => {
         managerNFTInstance.methods
           .sendTransaction({
             dest: managerCollection.address,
-            value: toNano(1.5),
+            value: toNano(2.5),
             bounce: false,
             flags: 0,
             payload: managerCollectionCallData,
           })
           .send({
             from: manager.address,
-            amount: toNano(2),
+            amount: toNano(3),
           }),
       );
       // console.log(tracing);

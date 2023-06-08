@@ -8,6 +8,8 @@
     "deploy-devnet": "rm -rf ./deployments/devnet && locklift deploy --network devnet",
     "create-account-local": "npx locklift run -s ./scripts/create-account.ts -n local",
     "create-account-devnet": "npx locklift run -s ./scripts/create-account.ts -n devnet",
+    "create-card-local": "npx locklift run -s ./scripts/create-card.ts -n local",
+    "create-card-devnet": "npx locklift run -s ./scripts/create-card.ts -n devnet",
     "start-node": "docker run -d --name local-node -e USER_AGREEMENT=yes -p80:80 tonlabs/local-node",
     "test": "npx locklift test --network local"
   },

@@ -26,12 +26,8 @@ contract CardWithLimits is BaseCard {
 
     constructor(TvmCell cardDetails) BaseCard(cardDetails) public {
         tvm.accept();
-        _cardType = CardType.DEBIT;
 
-        TvmSlice cardDetailsSlice = cardDetails.toSlice();
-        (address currency) = cardDetailsSlice.decode(address);
-
-        IBank(_bank).getDefaultSpending{callback : CardWithLimits.setDefaultSpendingLimitsOnInit}(currency);
+        IBank(_bank).getDefaultSpending{value: 0.1 ever, callback : CardWithLimits.setDefaultSpendingLimitsOnInit, flag: 1}(_currency);
     }
 
     function setDefaultSpendingLimitsOnInit(

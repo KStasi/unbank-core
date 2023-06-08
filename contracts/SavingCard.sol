@@ -19,10 +19,9 @@ contract SavingCard is BaseCard {
 
     constructor(TvmCell cardDetails) BaseCard(cardDetails) public {
         tvm.accept();
-        _cardType = CardType.SAVINGS;
 
         TvmSlice cardDetailsSlice = cardDetails.toSlice();
-        (address currency, address owner, address bank, uint128 targetAmount) = cardDetailsSlice.decode(address, address, address, uint128);
+        (uint128 targetAmount) = cardDetailsSlice.decode(uint128);
 
         _targetAmount = targetAmount;
     }

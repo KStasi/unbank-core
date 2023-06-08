@@ -25,7 +25,7 @@ export default async () => {
       signerId: `${i + 6}`,
       accountSettings: {
         type: WalletTypes.EverWallet,
-        value: locklift.utils.toNano(5),
+        value: locklift.utils.toNano(10),
       },
     })),
     ...Array.from({ length: 1 }, (_, i) => ({

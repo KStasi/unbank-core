@@ -14,7 +14,6 @@ import "./interfaces/IBank.sol";
 // TODO: does it make sense to make BaseCard TIP3 compatible?
 
 contract BaseCard is
-    InternalOwner,
     RandomNonce {
 
     enum CardType {
@@ -23,9 +22,11 @@ contract BaseCard is
         SAVINGS
     }
 
-    address public _bank; // TODO: make static
+    address static public _bank;
+    address static public _currency;
+    address static public _owner;
+
     address public _bankWallet;
-    address public _currency; // TODO: make static
     address public _wallet;
 
     // dev: not needed since we have wallet.balance
@@ -35,8 +36,14 @@ contract BaseCard is
 
     bool public _isActive = true;
 
-    CardType public _cardType; // TODO: make static
-    uint128 constant DEPLOY_WALLET_VALUE = 1000000; // TODO: make upgradable
+    CardType static public _cardType;
+    uint128 constant DEPLOY_WALLET_VALUE = 0.3 ever; // TODO: make upgradable
+    uint128 constant DEPLOY_WALLET_EXECUTION_FEE = 0.1 ever; // TODO: make upgradable
+
+    modifier onlyOwner() {
+        require(msg.sender == _owner && msg.sender.value != 0, _ErrorCodes.NOT_OWNER);
+        _;
+    }
 
     modifier onlyAllowedTokenRoot(address tokenRoot) {
         require(tokenRoot == _currency, ErrorCodes.NOT_TOKEN_ROOT);
@@ -60,14 +67,8 @@ contract BaseCard is
 
     constructor(TvmCell cardDetails) public {
         tvm.accept();
-        TvmSlice cardDetailsSlice = cardDetails.toSlice();
-        (address currency, address owner, address bank) = cardDetailsSlice.decode(address, address, address);
 
-        setOwnership(owner);
-        _currency = currency;
-        _bank =  bank;
-
-        ITokenRoot(currency).deployWallet{callback: BaseCard.onWalletCreated}(address(this), DEPLOY_WALLET_VALUE);
+        ITokenRoot(_currency).deployWallet{callback: BaseCard.onWalletCreated, value: DEPLOY_WALLET_VALUE+DEPLOY_WALLET_EXECUTION_FEE, flag: 1}(address(this), DEPLOY_WALLET_VALUE);
     }
 
     function updateCrusialParams()
