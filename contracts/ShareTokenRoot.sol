@@ -12,10 +12,9 @@ import "tip3/contracts/TokenRoot.sol";
 import "tip3/contracts/TokenWallet.sol";
 import "./ErrorCodes.sol";
 import "./interfaces/IBank.sol";
+import "./interfaces/IShareTokenRoot.sol";
 
-// TODO: think what things should be comminted before continue?
-// TODO: comprehend permisions system
-contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptTokensBurnCallback {
+contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptTokensBurnCallback, IShareTokenRoot {
     struct Transaction {
         // Transaction Id.
         uint64 id;
@@ -70,7 +69,6 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
     mapping(uint64 => Deposit) _lockedDeposits;
     mapping(address => address) public _walletAddresses; // currency => wallet
 
-    // TODO: add methods to update params
     // Minimal number of confirmations needed to execute transaction.
     uint32 _defaultQuorumRate;
     // Unconfirmed transaction lifetime, in seconds.
@@ -79,6 +77,13 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
     uint32 _depositLock = 30 * 24 * 3600;
     uint128 _deployWalletValue = 0.3 ever;
 
+    /**
+     * @notice Initialize the contract.
+     * @dev This function is called in the constructor to set the initial contract state.
+     * @param minProposerBalance The minimum balance for a proposer.
+     * @param defaultQuorumRate The default rate of quorum for transaction approval.
+     * @param lifetime The lifetime of unconfirmed transactions.
+     */
     function _initialize(
         uint128 minProposerBalance,
         uint32 defaultQuorumRate,
@@ -95,7 +100,12 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
         }
     }
 
-
+    /**
+     * @notice Contract constructor.
+     * @param defaultQuorumRate The default rate of quorum for transaction approval.
+     * @param lifetime The lifetime of unconfirmed transactions.
+     * @param initialShares Array of initial shares distribution.
+     */
     constructor(
         uint32 defaultQuorumRate,
         uint32 lifetime,
@@ -122,7 +132,12 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
         }
     }
 
-    function addWallet(address currencyRoot) public onlyRootOwner {
+    /**
+     * @notice Request deployment of a wallet for a new currency.
+     * @dev Can only be called by the root owner.
+     * @param currencyRoot The root address of the currency.
+     */
+    function addWallet(address currencyRoot) public onlyRootOwner override {
         require(!_walletAddresses.exists(currencyRoot), ErrorCodes.WALLET_ALREADY_CREATED);
         tvm.accept();
         ITokenRoot root = ITokenRoot(currencyRoot);
@@ -132,15 +147,32 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
         );
     }
 
+    /**
+     * @notice Callback for when a wallet is created.
+     * @param _wallet The address of the wallet that was created.
+     */
     function onWalletCreated(
         address _wallet
     )
-        public
+        public override
     {
         require(!_walletAddresses.exists(msg.sender), ErrorCodes.WALLET_ALREADY_CREATED);
         tvm.accept();
         _walletAddresses[msg.sender] = _wallet;
     }
+
+    /**
+     * @notice Submit a transaction.
+     * @param sender The address of the wallet owner. Used to verify that the sender is a wallet with valid code.
+     * @param senderBalance The balance of the sender's wallet.
+     * @param dest The destination address for the transaction.
+     * @param value The value to be transferred.
+     * @param bounce If true, the transfer fails if the destination address does not exist.
+     * @param allBalance If true, sends the entire remaining balance.
+     * @param payload The payload to be delivered to the destination address.
+     * @param stateInit Optional initial state for the destination account.
+     * @return transId The ID of the submitted transaction.
+     */
     function submitTransaction(
         address sender,
         uint128 senderBalance,
@@ -150,7 +182,7 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
         bool allBalance,
         TvmCell payload,
         optional(TvmCell) stateInit
-    ) public returns (uint64 transId) {
+    ) public override returns (uint64 transId) {
         require(msg.sender == address(tvm.hash(_buildWalletInitData(sender))), ErrorCodes.SENDER_IS_NOT_VALID_WALLET);
         require(senderBalance > _minProposerBalance, ErrorCodes.LOW_PROPOSER_BALANCE);
         _removeExpiredTransactions();
@@ -177,6 +209,17 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
         return trId;
     }
 
+    /**
+     * @notice Mints tokens in exchange for a specified deposit.
+     * @dev Only callable by the root owner.
+     * @dev Requires the deposit to exist. The deposit becomes unclaimable and start belonging to DAO.
+     * @param depositId The ID of the deposit for which tokens are being minted.
+     * @param amount The amount of tokens to be minted.
+     * @param deployWalletValue The value to be sent to the wallet on deployment.
+     * @param remainingGasTo The address to which remaining gas should be sent.
+     * @param notify Whether the receiver should be notified.
+     * @param payload The payload for the minting transaction.
+     */
     function mintForDeposit(
         uint64 depositId,
         uint128 amount,
@@ -184,7 +227,7 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
         address remainingGasTo,
         bool notify,
         TvmCell payload
-    ) public onlyRootOwner {
+    ) public onlyRootOwner override {
         require(_lockedDeposits.exists(depositId), ErrorCodes.DEPOSIT_DOES_NOT_EXIST);
         Deposit deposit = _lockedDeposits[depositId];
         tvm.accept();
@@ -195,7 +238,13 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
     }
 
 
-    function confirmTransaction(uint64 trId, uint128 votes) public {
+    /**
+     * @notice Vote for a proposed transaction.
+     * @dev Removes expired transactions.
+     * @param trId The ID of the transaction to be confirmed.
+     * @param votes The number of votes to be added to the transaction.
+     */
+    function confirmTransaction(uint64 trId, uint128 votes) public override {
         _removeExpiredTransactions();
         Transaction txn = _transactions[trId];
         tvm.accept();
@@ -221,6 +270,144 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
         } else {
             txn.votesReceived += votes;
             _transactions[txn.id] = txn;
+        }
+    }
+
+    /**
+     * @notice Sets the default quorum rate.
+     * @dev Only callable by the root owner.
+     * @dev Requires a valid quorum rate.
+     * @param newRate The new default quorum rate.
+     */
+    function setDefaultQuorumRate(uint32 newRate) public onlyRootOwner override {
+        require(newRate > 0 && newRate <= QUORUM_BASE, ErrorCodes.INVALID_QUORUM_RATE);
+        _defaultQuorumRate = newRate;
+    }
+
+    /**
+     * @notice Sets the lifetime of the contract.
+     * @dev Only callable by the root owner.
+     * @param newLifetime The new lifetime of the contract.
+     */
+    function setLifetime(uint32 newLifetime) public onlyRootOwner override{
+        _lifetime = math.max(MIN_LIFETIME, math.min(newLifetime, uint32(now & 0xFFFFFFFF)));
+    }
+
+    /**
+     * @notice Sets the minimum balance required for a proposer.
+     * @dev Only callable by the root owner.
+     * @param newBalance The new minimum proposer balance.
+     */
+    function setMinProposerBalance(uint128 newBalance) public onlyRootOwner override{
+        _minProposerBalance = newBalance;
+    }
+
+    /**
+     * @notice Sets the deposit lock period.
+     * @dev Only callable by the root owner.
+     * @param newLock The new deposit lock period.
+     */
+    function setDepositLock(uint32 newLock) public onlyRootOwner override{
+        _depositLock = newLock;
+    }
+
+    /**
+     * @notice Sets the deploy wallet value.
+     * @dev Only callable by the root owner.
+     * @param newValue The new deploy wallet value.
+     */
+    function setDeployWalletValue(uint128 newValue) public onlyRootOwner override {
+        _deployWalletValue = newValue;
+    }
+
+    /**
+     * @notice Handles token transfers for deposit locks.
+     * @dev Requires a positive amount and accepts only supported currencies.
+     * @param tokenRoot The root of the token being transferred.
+     * @param amount The amount of tokens being transferred.
+     * @param sender The sender of the tokens.
+     * @param senderWallet The wallet of the sender.
+     * @param remainingGasTo The address to which remaining gas should be sent.
+     * @param payload The payload for the transfer.
+     */
+    function onAcceptTokensTransfer(
+        address tokenRoot,
+        uint128 amount,
+        address sender,
+        address senderWallet,
+        address remainingGasTo,
+        TvmCell payload
+    ) public override {
+        require(amount > 0, ErrorCodes.INVALID_DEPOSIT_VALUE);
+        require(_walletAddresses.exists(tokenRoot), ErrorCodes.INVALED_CURREMCY_ROOT);
+        // TODO: add infastructure to ensure deposit was allowed
+        tvm.accept();
+
+        uint64 depositId = _generateId();
+        Deposit deposit = Deposit({
+            amount: amount,
+            lockedUntil: now + _depositLock,
+            assetRoot: tokenRoot,
+            owner: sender
+        });
+        _lockedDeposits[depositId] = deposit;
+    }
+
+
+    /**
+     * @notice Unlocks a specified deposit.
+     * @dev Requires the deposit to exist, be unlocked, and the sender to be the owner. Normally is called if the mintForDeposit proposal was denied.
+     * @param depositId The ID of the deposit to be unlocked.
+     */
+    function unlockValue(uint64 depositId) public override {
+        require(_lockedDeposits.exists(depositId), ErrorCodes.DEPOSIT_DOES_NOT_EXIST);
+        Deposit deposit = _lockedDeposits[depositId];
+        require(deposit.lockedUntil < now, ErrorCodes.DEPOSIT_IS_LOCKED);
+        require(deposit.owner == msg.sender || msg.sender == address(this), ErrorCodes.DEPOSIT_OWNER_MISMATCH);
+        tvm.accept();
+
+        delete _lockedDeposits[depositId];
+        TvmCell emptyCell;
+        ITokenWallet(_walletAddresses[deposit.assetRoot]).transfer(
+            deposit.amount,
+            deposit.owner,
+            0,
+            address(this),
+            false,
+            emptyCell
+        );
+    }
+
+    /**
+     * @notice Handles token burning. Burning normally happens when someone sells shares in exchange for cash.
+     * @dev Only callable by the root owner.
+     * @param amount The amount of tokens to be burned.
+     * @param walletOwner The owner of the wallet from which tokens are being burned.
+     * @param wallet The wallet from which tokens are being burned.
+     * @param remainingGasTo The address to which remaining gas should be sent.
+     * @param payload The payload for the burn.
+     */
+    function onAcceptTokensBurn(
+        uint128 amount,
+        address walletOwner,
+        address wallet,
+        address remainingGasTo,
+        TvmCell payload
+    ) external onlyRootOwner override {
+        tvm.accept();
+        TvmSlice slice = payload.toSlice();
+        if (!slice.empty()) {
+            (address cbdcRoot, uint128 cbdcAmount, address receiver) = slice.decode(address, uint128, address);
+            require(_walletAddresses.exists(cbdcRoot), ErrorCodes.CURRENCY_NOT_SUPPORTED);
+            TvmCell emptyCell;
+            ITokenWallet(_walletAddresses[cbdcRoot]).transfer(
+                cbdcAmount,
+                receiver,
+                0,
+                remainingGasTo,
+                false,
+                emptyCell
+            );
         }
     }
 
@@ -267,69 +454,5 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
         }
     }
 
-    function onAcceptTokensTransfer(
-        address tokenRoot,
-        uint128 amount,
-        address sender,
-        address senderWallet,
-        address remainingGasTo,
-        TvmCell payload
-    ) public override {
-        require(amount > 0, ErrorCodes.INVALID_DEPOSIT_VALUE);
-        require(_walletAddresses.exists(tokenRoot), ErrorCodes.INVALED_CURREMCY_ROOT);
-        // TODO: add infastructure to ensure deposit was allowed
-        tvm.accept();
 
-        uint64 depositId = _generateId();
-        Deposit deposit = Deposit({
-            amount: amount,
-            lockedUntil: now + _depositLock,
-            assetRoot: tokenRoot,
-            owner: sender
-        });
-        _lockedDeposits[depositId] = deposit;
-    }
-
-    function unlockValue(uint64 depositId) public {
-        require(_lockedDeposits.exists(depositId), ErrorCodes.DEPOSIT_DOES_NOT_EXIST);
-        Deposit deposit = _lockedDeposits[depositId];
-        require(deposit.lockedUntil < now, ErrorCodes.DEPOSIT_IS_LOCKED);
-        require(deposit.owner == msg.sender || msg.sender == address(this), ErrorCodes.DEPOSIT_OWNER_MISMATCH);
-        tvm.accept();
-
-        delete _lockedDeposits[depositId];
-        TvmCell emptyCell;
-        ITokenWallet(_walletAddresses[deposit.assetRoot]).transfer(
-            deposit.amount,
-            deposit.owner,
-            0,
-            address(this),
-            false,
-            emptyCell
-        );
-    }
-
-    function onAcceptTokensBurn(
-        uint128 amount,
-        address walletOwner,
-        address wallet,
-        address remainingGasTo,
-        TvmCell payload
-    ) external onlyRootOwner override {
-        tvm.accept();
-        TvmSlice slice = payload.toSlice();
-        if (!slice.empty()) {
-            (address cbdcRoot, uint128 cbdcAmount, address receiver) = slice.decode(address, uint128, address);
-            require(_walletAddresses.exists(cbdcRoot), ErrorCodes.CURRENCY_NOT_SUPPORTED);
-            TvmCell emptyCell;
-            ITokenWallet(_walletAddresses[cbdcRoot]).transfer(
-                cbdcAmount,
-                receiver,
-                0,
-                remainingGasTo,
-                false,
-                emptyCell
-            );
-        }
-    }
 }

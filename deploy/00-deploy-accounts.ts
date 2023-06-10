@@ -2,13 +2,11 @@ import { Address, getRandomNonce, toNano, zeroAddress, WalletTypes } from "lockl
 import BigNumber from "bignumber.js";
 
 export default async () => {
-  // Prepare accounts settings
   const accountSettings = {
     type: WalletTypes.EverWallet,
     value: locklift.utils.toNano(0.2),
   };
 
-  // Build accounts to deploy
   const accountsToDeploy = [
     ...Array.from({ length: 1 }, (_, i) => ({
       deploymentName: `Founder${i + 1}`,
