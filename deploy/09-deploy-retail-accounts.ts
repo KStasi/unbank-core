@@ -44,7 +44,7 @@ export default async () => {
       .callAsAnyManager({
         owner: manager.address,
         dest: accountFactory.address,
-        value: toNano(1),
+        value: toNano(0.5),
         bounce: false,
         flags: 0,
         payload: accountFactoryCallData,
@@ -63,14 +63,14 @@ export default async () => {
       managerNFTInstance.methods
         .sendTransaction({
           dest: managerCollection.address,
-          value: toNano(2),
+          value: toNano(0.8),
           bounce: false,
           flags: 0,
           payload: managerCollectionCallData,
         })
         .send({
           from: manager.address,
-          amount: toNano(3),
+          amount: toNano(1),
         }),
     );
 
@@ -94,7 +94,7 @@ export default async () => {
         .callAsAnyManager({
           owner: manager.address,
           dest: retailAccountInstance.address,
-          value: toNano(2),
+          value: toNano(1.2),
           bounce: false,
           flags: 0,
           payload: addCardCallData,
@@ -104,14 +104,14 @@ export default async () => {
         managerNFTInstance.methods
           .sendTransaction({
             dest: managerCollection.address,
-            value: toNano(2.5),
+            value: toNano(1.3),
             bounce: false,
             flags: 0,
             payload: managerCollectionCallData,
           })
           .send({
             from: manager.address,
-            amount: toNano(3),
+            amount: toNano(1.4),
           }),
       );
       // console.log(tracing);

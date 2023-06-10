@@ -53,7 +53,7 @@ export default async () => {
           lifetime: lifetime,
           initialShares: initialShares,
         },
-        value: toNano(3),
+        value: toNano(1.5),
       },
       deploymentName: rootContract,
       enableLogs: true,

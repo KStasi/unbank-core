@@ -58,18 +58,18 @@ export default async () => {
           constructorParams: {
             initialSupplyTo: initialSupplyTo,
             initialSupply: new BigNumber(tokenData.initialSupply).shiftedBy(tokenData.decimals).toFixed(),
-            deployWalletValue: toNano(1),
+            deployWalletValue: toNano(0.3),
             mintDisabled: disableMint,
             burnByRootDisabled: disableBurnByRoot,
             burnPaused: pauseBurn,
             remainingGasTo: zeroAddress,
           },
-          value: toNano(3),
+          value: toNano(1.5),
         },
         deploymentName: tokenData.deploymentName, // user-defined custom name
         enableLogs: true,
       }),
-    );
+      )
   }
 };
 export const tag = "CBDCs";

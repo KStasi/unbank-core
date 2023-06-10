@@ -43,7 +43,7 @@ export default async () => {
           admin: shareTokenRoot.address,
           initialChiefManagers,
         },
-        value: toNano(3),
+        value: toNano(1.2),
       },
       deploymentName: collectionContractName,
       enableLogs: true,

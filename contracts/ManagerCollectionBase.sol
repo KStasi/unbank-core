@@ -12,8 +12,8 @@ import './ErrorCodes.sol';
 
 contract ManagerCollectionBase is TIP4_2Collection, TIP4_3Collection, RandomNonce {
 
-    uint128 _remainOnNft = 1 ton;
-    uint128 _deployValue = 1.5 ton;
+    uint128 _remainOnNft = 0.3 ton;
+    uint128 _deployValue = 0.9 ton;
     address _admin;
 
     modifier onlyAdmin() {

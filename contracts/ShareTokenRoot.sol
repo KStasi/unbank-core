@@ -77,7 +77,7 @@ contract ShareTokenRoot is TokenRoot, IAcceptTokensTransferCallback, IAcceptToke
     uint32 _lifetime;
     uint128 _minProposerBalance;
     uint32 _depositLock = 30 * 24 * 3600;
-    uint128 _deployWalletValue = 1 ever;
+    uint128 _deployWalletValue = 0.3 ever;
 
     function _initialize(
         uint128 minProposerBalance,

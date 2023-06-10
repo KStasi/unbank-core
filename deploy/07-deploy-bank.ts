@@ -1,4 +1,4 @@
-import { WalletTypes, toNano } from "locklift";
+import { WalletTypes, toNano, getRandomNonce } from "locklift";
 
 export type cbdcDetails = [
   Address,
@@ -13,8 +13,8 @@ export default async () => {
   const chiefManagerCollection = await locklift.deployments.getContract("ChiefManagerCollection");
 
   const cbdc1 = await locklift.deployments.getContract("CBDC1");
-  // const cbdc2 = await locklift.deployments.getContract("CBDC2");
-  // const cbdc3 = await locklift.deployments.getContract("CBDC3");
+  const cbdc2 = await locklift.deployments.getContract("CBDC2");
+  const cbdc3 = await locklift.deployments.getContract("CBDC3");
 
   const intialCbdcDetails = [
     [
@@ -25,25 +25,25 @@ export default async () => {
         defaultMonthlyLimit: toNano(1000),
       },
     ],
-    // [
-    //   cbdc2.address,
-    //   {
-    //     isActive: true,
-    //     defaultDailyLimit: toNano(100),
-    //     defaultMonthlyLimit: toNano(1000),
-    //   },
-    // ],
-    // [
-    //   cbdc3.address,
-    //   {
-    //     isActive: true,
-    //     defaultDailyLimit: toNano(100),
-    //     defaultMonthlyLimit: toNano(1000),
-    //   },
-    // ],
+    [
+      cbdc2.address,
+      {
+        isActive: true,
+        defaultDailyLimit: toNano(100),
+        defaultMonthlyLimit: toNano(1000),
+      },
+    ],
+    [
+      cbdc3.address,
+      {
+        isActive: true,
+        defaultDailyLimit: toNano(100),
+        defaultMonthlyLimit: toNano(1000),
+      },
+    ],
   ];
 
-  const randomNonce = new Date().getTime();
+  const randomNonce = getRandomNonce();
 
   const tracing = await locklift.tracing.trace(
     locklift.deployments.deploy({
@@ -58,7 +58,7 @@ export default async () => {
           chiefManagerCollection: chiefManagerCollection.address,
           cbdcDetails: intialCbdcDetails,
         },
-        value: toNano(3),
+        value: toNano(2.5), // + 0.5 for each currency
       },
       deploymentName: bankContractName,
       enableLogs: true,

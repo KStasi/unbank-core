@@ -12,7 +12,7 @@ contract CardsRegistry is RandomNonce {
         TvmCell code;
     }
 
-    uint128 public _initialDeposit = 1.5 ever;
+    uint128 public _initialDeposit = 0.8 ever;
 
     mapping(uint8 => TvmCell) public _cardsCode;
 

@@ -20,7 +20,7 @@ export default async () => {
     {
       owner: manager1.address,
       manager: chiefManager1.address,
-      json: `{"role":"Chief Manager"}`,
+      json: `{"role":"Manager"}`,
     },
     // {
     //   owner: manager2.address,
@@ -49,7 +49,7 @@ export default async () => {
           admin: chiefManagerCollection.address,
           initialManagers,
         },
-        value: toNano(4),
+        value: toNano(1.2),
       },
       deploymentName: collectionContractName,
       enableLogs: true,

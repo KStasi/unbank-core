@@ -8,7 +8,7 @@ export default async () => {
   const bank = await locklift.deployments.getContract("Bank");
   const requestsRegistry = await locklift.deployments.getContract("RequestsRegistry");
   const managerCollection = await locklift.deployments.getContract("ManagerCollection");
-  const initialAmount = toNano(1);
+  const initialAmount = toNano(0.3);
 
   const tracing = await locklift.tracing.trace(
     locklift.deployments.deploy({
@@ -26,7 +26,7 @@ export default async () => {
           managerCollection: managerCollection.address,
           initialAmount: initialAmount,
         },
-        value: toNano(1),
+        value: toNano(0.3),
       },
       deploymentName: accountFactoryContractName,
       enableLogs: true,

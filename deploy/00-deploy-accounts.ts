@@ -5,7 +5,7 @@ export default async () => {
   // Prepare accounts settings
   const accountSettings = {
     type: WalletTypes.EverWallet,
-    value: locklift.utils.toNano(0.3),
+    value: locklift.utils.toNano(0.2),
   };
 
   // Build accounts to deploy

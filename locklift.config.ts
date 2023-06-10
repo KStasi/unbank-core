@@ -71,7 +71,7 @@ const config: LockliftConfig = {
       },
       keys: {
         // Use everdev to generate your phrase
-        // !!! Never commit it in your repos !!!
+        phrase: "learn poem pizza code error draw surprise crowd differ sunset rent always",
         amount: 20,
       },
     },
@@ -110,8 +110,8 @@ const config: LockliftConfig = {
         },
       },
       giver: {
-        address: "0:0000000000000000000000000000000000000000000000000000000000000000",
-        phrase: "phrase",
+        address: "0:5368ceef99d6ce85728bc9924d8ceed46b30441d3f9efaf42853a3a6af3d46d0",
+        phrase: "scrap frozen noble company include sail dynamic verify zebra barrel syrup picture",
         accountId: 0,
       },
       tracing: {
@@ -120,7 +120,7 @@ const config: LockliftConfig = {
       keys: {
         // Use everdev to generate your phrase
         // !!! Never commit it in your repos !!!
-        phrase: "scrap frozen noble company include sail dynamic verify zebra barrel syrup picture",
+        phrase: "learn poem pizza code error draw surprise crowd differ sunset rent always",
         amount: 20,
       },
     },

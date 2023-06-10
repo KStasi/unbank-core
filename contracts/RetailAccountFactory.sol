@@ -56,7 +56,6 @@ contract RetailAccountFactory is RandomNonce {
 
         address newRetailAccount = new RetailAccount{
             value: _initialAmount,
-            flag: 0,
             stateInit: state
         }(_cardsRegistry, _bank, _requestsRegistry, _managerCollection);
         return newRetailAccount;
