@@ -43,7 +43,7 @@ contract CardsRegistry is RandomNonce, ICardsRegistry, InternalOwner {
      * @param cardTypeId The ID representing the card type.
      * @param cardType The type of the card.
      * @param cardDetails The details of the card.
-     * @returns The address of the token wallet.
+     * @return tokenWallet The address of the token wallet.
      */
     function deployCard(
         address currency,

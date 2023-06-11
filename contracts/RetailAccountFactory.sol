@@ -3,13 +3,13 @@ pragma ever-solidity >= 0.61.2;
 pragma AbiHeader expire;
 
 import "@broxus/contracts/contracts/utils/RandomNonce.tsol";
+import "./interfaces/IRetailAccountFactory.sol";
 import "./ErrorCodes.sol";
-import "./CardsRegistry.sol";
 import "./BaseCard.sol";
 import "./RetailAccount.sol";
 
 // TODO: add index for all accounts
-contract RetailAccountFactory is RandomNonce {
+contract RetailAccountFactory is RandomNonce, IRetailAccountFactory {
 
     TvmCell public _accountCode;
     address public _cardsRegistry;
@@ -45,10 +45,18 @@ contract RetailAccountFactory is RandomNonce {
         _requestsRegistry = requestsRegistry;
     }
 
+    /**
+     * @notice Deploy a new retail account with optional public key and owner address.
+     * @dev This function is only callable by the manager collection.
+     * @dev This function accepts the function call, hence any message attached to it will be consumed.
+     * @param pubkey The optional public key.
+     * @param owner The optional owner address.
+     * @return The address of the newly deployed retail account.
+     */
     function deployRetailAccount(
         optional(uint128) pubkey,
         optional(address) owner
-    ) public onlyManagerCollection returns (address) {
+    ) public onlyManagerCollection override returns (address) {
         tvm.accept();
 
         TvmCell code = _buildCode(address(this));
@@ -61,27 +69,59 @@ contract RetailAccountFactory is RandomNonce {
         return newRetailAccount;
     }
 
-    function setCardsRegistry(address cardsRegistry) public onlyBank {
+    /**
+     * @notice Set the cards registry address.
+     * @dev This function is only callable by the bank.
+     * @param cardsRegistry The address of the cards registry.
+     */
+    function setCardsRegistry(address cardsRegistry) override public onlyBank {
         _cardsRegistry = cardsRegistry;
     }
 
-    function setBank(address bank) public onlyBank {
+    /**
+     * @notice Set the bank address.
+     * @dev This function is only callable by the bank.
+     * @param bank The address of the bank.
+     */
+    function setBank(address bank) override public onlyBank {
         _bank = bank;
     }
 
-    function setManagerCollection(address managerCollection) public onlyBank {
+    /**
+     * @notice Set the manager collection address.
+     * @dev This function is only callable by the bank.
+     * @param managerCollection The address of the manager collection.
+     */
+    function setManagerCollection(address managerCollection) override public onlyBank {
         _managerCollection = managerCollection;
     }
 
-    function setInitialAmount(uint128 initialAmount) public onlyBank {
+    /**
+     * @notice Set the initial amount for retail accounts.
+     * @dev This function is only callable by the bank.
+     * @param initialAmount The initial amount for retail accounts.
+     */
+    function setInitialAmount(uint128 initialAmount) override public onlyBank {
         _initialAmount = initialAmount;
     }
 
-    function setAccountCode(TvmCell accountCode) public onlyBank {
+    /**
+     * @notice Set the account code.
+     * @dev This function is only callable by the bank.
+     * @param accountCode The code of the account.
+     */
+    function setAccountCode(TvmCell accountCode) override public onlyBank {
         _accountCode = accountCode;
     }
 
-    function retailAccountAddress(optional(uint128) pubkey, optional(address) owner) external view virtual responsible returns (address retailAccount) {
+    /**
+     * @notice Get the address of a retail account based on the optional public key and owner address.
+     * @dev This function is responsible which means that it will not run out of gas during its execution.
+     * @param pubkey The optional public key.
+     * @param owner The optional owner address.
+     * @return retailAccount The address of the retail account.
+     */
+    function retailAccountAddress(optional(uint128) pubkey, optional(address) owner) override external view virtual responsible returns (address retailAccount) {
         return {value: 0, flag: 64, bounce: false} (_resolveAccount(pubkey, owner));
     }
 

@@ -5,8 +5,8 @@ pragma AbiHeader pubkey;
 
 import "./ErrorCodes.sol";
 import "./RequestsRegistry.sol";
-
-contract Proposal {
+import "./interfaces/IProposal.sol";
+contract Proposal is IProposal {
     address _chiefManager;
 
     uint64 static _id;
@@ -26,7 +26,13 @@ contract Proposal {
         _chiefManager = chiefManager;
     }
 
-    function approve() public onlyChiefManager {
+    /**
+     * @notice Approves the proposal.
+     * @dev This function is only callable by the chief manager.
+     * @dev This function accepts the function call, hence any message attached to it will be consumed.
+     * @dev Executes the request specified in the proposal.
+     */
+    function approve() public onlyChiefManager override {
         tvm.accept();
         _isApproved = true;
         RequestsRegistry(_requestsRegistry).execute(_id, address(this), _value, _flags, _callPayload);

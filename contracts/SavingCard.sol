@@ -11,6 +11,7 @@ import "./ErrorCodes.sol";
 import "./interfaces/IBank.sol";
 import "./BaseCard.sol";
 
+// TODO: consider issueing a card as NFT
 contract SavingCard is BaseCard {
     uint128 public _targetAmount = 0;
     uint128 public _cachedBalance = 0;
