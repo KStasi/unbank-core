@@ -4,7 +4,6 @@ pragma AbiHeader expire;
 pragma AbiHeader time;
 
 import './ManagerCollectionBase.sol';
-import './ManagerNftBase.sol';
 import './ErrorCodes.sol';
 
 contract ManagerCollection is ManagerCollectionBase {
@@ -13,6 +12,7 @@ contract ManagerCollection is ManagerCollectionBase {
         address manager;
         string json;
     }
+
     constructor(
         TvmCell codeNft,
         string json,
@@ -34,6 +34,13 @@ contract ManagerCollection is ManagerCollectionBase {
         }
     }
 
+    /**
+     * @notice Mints a new non-fungible token (NFT) and assigns it to an owner
+     * @dev Can only be called by the contract administrator.
+     * @param json The metadata of the NFT in the form of a JSON string.
+     * @param owner The address of the owner to whom the NFT will be assigned.
+     * @param manager The address of the manager responsible for managing the NFT.
+     */
     function mintNft(
         string json,
         address owner,

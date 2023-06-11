@@ -5,7 +5,6 @@ pragma AbiHeader time;
 pragma AbiHeader pubkey;
 
 import './ManagerCollectionBase.sol';
-import './ManagerNftBase.sol';
 import './ErrorCodes.sol';
 
 contract ChiefManagerCollection is ManagerCollectionBase {
@@ -33,7 +32,13 @@ contract ChiefManagerCollection is ManagerCollectionBase {
             _mintNft(chiefManager.json, chiefManager.owner, admin);
         }
     }
-
+    /**
+     * @notice Mints a new non-fungible token (NFT) and assigns it to an owner
+     * @dev Can only be called by the contract administrator.
+     * @param json The metadata of the NFT in the form of a JSON string.
+     * @param owner The address of the owner to whom the NFT will be assigned.
+     * @param _manager The address is always set to the Share Token Root.
+     */
     function mintNft(
         string json,
         address owner,

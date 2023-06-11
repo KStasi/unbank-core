@@ -14,7 +14,6 @@ import "./interfaces/IShareTokenWallet.sol";
 
 /**
  * @title ShareTokenWallet
- * @author KStasi
  * @notice This contract is an implementation of the TokenWallet and IShareTokenWallet.
  * @notice It represents a token wallet with the feature to freeze the tokens until the end of the voting to vote for a proposal.
  * @dev The contract has two main state variables: a _frozenBalance and a mapping of castedVotes.
