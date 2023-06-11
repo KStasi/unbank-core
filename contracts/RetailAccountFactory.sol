@@ -5,7 +5,6 @@ pragma AbiHeader expire;
 import "@broxus/contracts/contracts/utils/RandomNonce.tsol";
 import "./interfaces/IRetailAccountFactory.sol";
 import "./ErrorCodes.sol";
-import "./BaseCard.sol";
 import "./RetailAccount.sol";
 
 // TODO: add index for all accounts

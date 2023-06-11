@@ -27,8 +27,11 @@ contract SavingCard is BaseCard {
         _targetAmount = targetAmount;
     }
 
-    // TODO: withdraw
-
+    /**
+     * @notice Sets the target amount for the saving card.
+     * @dev Can only be called by the bank.
+     * @param targetAmount The new target amount.
+     */
     function setTargetAmount(
         uint128 targetAmount
     )
@@ -47,6 +50,10 @@ contract SavingCard is BaseCard {
         ITokenWallet(_wallet).balance{callback: SavingCard.onBalanceUpdate}();
     }
 
+    /**
+     * @notice Updates the cached balance of the saving card.
+     * @dev Can only be called by the contract owner.
+     */
     function onBalanceUpdate(
         uint128 balance
     )

@@ -10,8 +10,9 @@ import "tip3/contracts/interfaces/ITokenWallet.sol";
 import "./ErrorCodes.sol";
 import "./interfaces/IBank.sol";
 import "./BaseCard.sol";
+import "./interfaces/ICardWithLimits.sol";
 
-contract CardWithLimits is BaseCard {
+contract CardWithLimits is BaseCard, ICardWithLimits {
     uint128 public _dailyLimit = 0;
     uint128 public _monthlyLimit = 0;
 
@@ -46,17 +47,28 @@ contract CardWithLimits is BaseCard {
         _updateSpendingLimit(dailyLimit, monthlyLimit);
     }
 
+    /**
+     * @notice Updates the spending limit for the card.
+     * @dev Can only be called by the contract owner.
+     * @param dailyLimit The new daily spending limit.
+     * @param monthlyLimit The new monthly spending limit.
+     */
     function updateSpendingLimit(
         uint128 dailyLimit,
         uint128 monthlyLimit
     )
         public
+        override
         onlyOwner
     {
         tvm.accept();
         _updateSpendingLimit(dailyLimit, monthlyLimit);
     }
 
+    /**
+     * @notice Updates the crucial parameters of the card.
+     * @dev Can only be called by the contract owner.
+     */
     function updateCrusialParams()
         public
         override
