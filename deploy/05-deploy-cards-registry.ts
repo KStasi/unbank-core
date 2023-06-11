@@ -7,6 +7,9 @@ export default async () => {
   const savingContractName = "SavingCard";
   const debitCard = locklift.factory.getContractArtifacts(debitContractName);
   const savingCard = locklift.factory.getContractArtifacts(savingContractName);
+  const chiefManagerCollection = await locklift.deployments.getContract("ChiefManagerCollection");
+
+  const owner = chiefManagerCollection.address;
 
   const initialCards = [
     {
@@ -26,7 +29,7 @@ export default async () => {
         initParams: {
           _randomNonce: getRandomNonce(),
         },
-        constructorParams: { initialCards },
+        constructorParams: { initialCards, owner },
         value: toNano(0.3),
       },
       deploymentName: registryContractName,
