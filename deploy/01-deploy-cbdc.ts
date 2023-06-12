@@ -28,7 +28,7 @@ export default async () => {
       name: "Venom Dirham",
       symbol: "veAED",
       initialSupply: 0,
-      decimals: 18,
+      decimals: 9,
       deploymentName: "CBDC3",
       rootOwner: founder1.address,
     },

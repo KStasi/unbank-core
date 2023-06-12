@@ -250,7 +250,9 @@ contract BaseCard is RandomNonce, IBaseCard {
         tvm.accept();
         _validateTransfer(amount, payload);
 
-        ITokenWallet(_wallet).transferToWallet(
+        ITokenWallet(_wallet).transferToWallet{
+            flag: 64
+        }(
             amount,
             recipientTokenWallet,
             remainingGasTo,
@@ -284,7 +286,9 @@ contract BaseCard is RandomNonce, IBaseCard {
         tvm.accept();
         _validateTransfer(amount, payload);
 
-        ITokenWallet(_wallet).transfer(
+        ITokenWallet(_wallet).transfer{
+            flag: 64
+        }(
             amount,
             recipient,
             deployWalletValue,

@@ -131,6 +131,7 @@ export default async () => {
       // console.log(tracing);
       const cardAddresses = (await retailAccountInstance.methods._cards().call())._cards.map((card) => card[0]);
 
+
       for (let automation of automations) {
         const tracing = await locklift.tracing.trace(retailAccountInstance.methods
           .addAutopayment({autopayment:{

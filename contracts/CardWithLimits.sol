@@ -27,6 +27,8 @@ contract CardWithLimits is BaseCard, ICardWithLimits {
 
     constructor(TvmCell cardDetails) BaseCard(cardDetails) public {
         tvm.accept();
+        _nextDay = block.timestamp + 1 days;
+        _nextMonth = block.timestamp + 30 days;
 
         IBank(_bank).getDefaultSpending{value: 0.1 ever, callback : CardWithLimits.setDefaultSpendingLimitsOnInit, flag: 1}(_currency);
     }
