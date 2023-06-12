@@ -10,9 +10,18 @@ import "./CardWithLimits.sol";
 
 
 contract RetailAccount {
+    struct Autopayment {
+        address cardFrom;
+        address receiver;
+        uint128 amount;
+        uint32 period;
+        uint32 nextPayment;
+    }
+
     optional(uint) static public _ownerPublicKey;
     optional(address) static public _ownerAddress;
     mapping(address => bool) public _cards;
+    Autopayment[] public _autopayments;
     bool public _isActive;
     address public _cardsRegistry;
     address public _requestsRegistry;
@@ -139,10 +148,36 @@ contract RetailAccount {
         BaseCard(card).transferToBank(amount, payload);
     }
 
-    // TODO: remove transfer to bank; >>>> move to banks level
+    function addAutopayment(Autopayment autopayment) public {
+        tvm.accept();
+        require(_cards.exists(autopayment.cardFrom), ErrorCodes.NOT_CARD_OF_ACCOUNT);
+        require(_cards[autopayment.cardFrom], ErrorCodes.CARD_NOT_ACTIVE);
+        _autopayments.push(autopayment);
+    }
 
-    // TODO: create autopayments
-    // TODO: cancel autopayments
+    function cancelAutopayment(uint autopaymentId) public {
+        tvm.accept();
+        delete _autopayments[autopaymentId];
+    }
+
+    function onTickTock(bool isTock) external {
+        tvm.accept();
+        for (Autopayment autopayment : _autopayments) {
+            if (autopayment.nextPayment <= now) {
+                TvmCell empty;
+                BaseCard(autopayment.cardFrom).transfer{flag : 1}(
+                    autopayment.amount,
+                    autopayment.receiver,
+                    0,
+                    address(this),
+                    false,
+                    empty
+                );
+                autopayment.nextPayment += autopayment.period;
+            }
+        }
+    }
+
 
     function setAccountActivation(
         bool isActive
@@ -153,9 +188,6 @@ contract RetailAccount {
         tvm.accept();
         _isActive = isActive;
     }
-
-    // TODO: emergency withdrawal
-
 
     function sendTransaction(
         address dest,
