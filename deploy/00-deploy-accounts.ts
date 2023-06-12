@@ -23,7 +23,7 @@ export default async () => {
       signerId: `${i + 6}`,
       accountSettings: {
         type: WalletTypes.EverWallet,
-        value: locklift.utils.toNano(10),
+        value: locklift.utils.toNano(0.2),
       },
     })),
     ...Array.from({ length: 1 }, (_, i) => ({

@@ -5,6 +5,11 @@ export default async () => {
   const accountFactory = await locklift.deployments.getContract("RetailAccountFactory");
   const managerCollection = await locklift.deployments.getContract("ManagerCollection");
 
+  const founders = [
+    locklift.deployments.getAccount("Founder1").account,
+    // locklift.deployments.getAccount("Founder2").account,
+    // locklift.deployments.getAccount("Founder3").account,
+  ];
   const managers = [
     locklift.deployments.getAccount("Manager1").account,
     // locklift.deployments.getAccount("Manager2").account,
@@ -25,6 +30,15 @@ export default async () => {
   const cards = [
     { cardTypeId: 0, currency: cbdcs[0].address, cardType: 0, otherCardDetails: "" },
     // { cardTypeId: 1, currency: cbdcs[0], otherCardDetails: "targetAmount" },
+  ];
+
+  // address cardFrom;
+  // address receiver;
+  // uint128 amount;
+  // uint32 period;
+  // uint32 nextPayment;
+  const automations = [
+    { cardFrom: 0, receiver: founders[0].address, amount: toNano(0.1), period: 3600, nextPayment: 0 }
   ];
 
   BigNumber.config({ EXPONENTIAL_AT: 120 });
@@ -115,6 +129,22 @@ export default async () => {
           }),
       );
       // console.log(tracing);
+      const cardAddresses = (await retailAccountInstance.methods._cards().call())._cards.map((card) => card[0]);
+
+      for (let automation of automations) {
+        const tracing = await locklift.tracing.trace(retailAccountInstance.methods
+          .addAutopayment({autopayment:{
+            cardFrom: cardAddresses[automation.cardFrom],
+            receiver: automation.receiver,
+            amount: automation.amount,
+            period: automation.period,
+            nextPayment: automation.nextPayment,
+          }}).send({
+              from: retailAccount.address,
+              amount: toNano(0.1),
+            }));
+        // console.log(tracing);
+      }
     }
   }
 };

@@ -71,6 +71,7 @@ contract RetailAccount {
         _bank = bank;
         _requestsRegistry = requestsRegistry;
         _managerCollection = managerCollection;
+        _isActive = true;
     }
 
     function addCard(
@@ -160,8 +161,11 @@ contract RetailAccount {
         delete _autopayments[autopaymentId];
     }
 
-    function onTickTock(bool isTock) external {
+    onTickTock(bool isTock) external {
         tvm.accept();
+        if (isTock) {
+            return;
+        }
         for (Autopayment autopayment : _autopayments) {
             if (autopayment.nextPayment <= now) {
                 TvmCell empty;
@@ -173,7 +177,7 @@ contract RetailAccount {
                     false,
                     empty
                 );
-                autopayment.nextPayment += autopayment.period;
+                autopayment.nextPayment = now + autopayment.period;
             }
         }
     }
