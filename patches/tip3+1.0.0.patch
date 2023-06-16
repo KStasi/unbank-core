@@ -1,0 +1,25 @@
+diff --git a/node_modules/tip3/contracts/abstract/TokenRootBase.sol b/node_modules/tip3/contracts/abstract/TokenRootBase.sol
+index 6c3b7fc..509e1d3 100644
+--- a/node_modules/tip3/contracts/abstract/TokenRootBase.sol
++++ b/node_modules/tip3/contracts/abstract/TokenRootBase.sol
+@@ -203,7 +203,7 @@ abstract contract TokenRootBase is ITokenRoot, ICallbackParamsStructure {
+ 
+         totalSupply_ += amount;
+ 
+-        ITokenWallet(recipientWallet).acceptMint{ value: 0, flag: TokenMsgFlag.ALL_NOT_RESERVED, bounce: true }(
++        ITokenWallet(recipientWallet).acceptMint{ value: 0.1 ever, flag: TokenMsgFlag.SENDER_PAYS_FEES, bounce: true }(
+             amount,
+             remainingGasTo,
+             notify,
+diff --git a/node_modules/tip3/contracts/abstract/TokenWalletBase.sol b/node_modules/tip3/contracts/abstract/TokenWalletBase.sol
+index d01a82c..c83199a 100644
+--- a/node_modules/tip3/contracts/abstract/TokenWalletBase.sol
++++ b/node_modules/tip3/contracts/abstract/TokenWalletBase.sol
+@@ -55,6 +55,7 @@ abstract contract TokenWalletBase is ITokenWallet {
+         TvmCell payload
+     )
+         override
++        virtual
+         external
+         onlyOwner
+     {

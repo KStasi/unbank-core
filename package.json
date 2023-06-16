@@ -11,7 +11,8 @@
     "create-card-local": "npx locklift run -s ./scripts/create-card.ts -n local",
     "create-card-devnet": "npx locklift run -s ./scripts/create-card.ts -n devnet",
     "start-node": "docker run -d --name local-node -e USER_AGREEMENT=yes -p80:80 tonlabs/local-node",
-    "test": "npx locklift test --network local"
+    "test": "npx locklift test --network local",
+    "postinstall": "patch-package"
   },
   "author": "",
   "license": "ISC",
@@ -30,6 +31,7 @@
   "dependencies": {
     "@broxus/contracts": "^1.1.1",
     "@itgold/everscale-tip": "^1.1.4",
-    "locklift-deploy": "^1.0.3"
+    "locklift-deploy": "^1.0.3",
+    "patch-package": "^7.0.0"
   }
 }

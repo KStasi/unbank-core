@@ -3,3 +3,4 @@ build/
 .temp/
 deployments/
 .DS_Store
+.vscode/
